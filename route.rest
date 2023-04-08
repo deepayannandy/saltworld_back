@@ -1,0 +1,148 @@
+GET http://localhost:6622/user/
+
+
+
+
+
+
+
+
+###
+
+GET http://localhost:6622/user/633005622017e741a5bfcee7
+
+
+
+
+
+
+
+
+
+###
+
+POST http://localhost:6622/user/register
+Content-Type: application/json
+
+{
+    "fullname":"Baisakhi Nandy",
+    "mobile":"9734567890",
+    "email":"baisakhi.622@gmail.com",
+    "ssn":"123456789",
+    "desig":"manager",
+    "empBranch":"Budbud",
+    "projid":"",
+    "password":"Deepayan"
+}
+
+
+
+###
+
+POST http://localhost:6622/user/login
+Content-Type: application/json
+
+{
+    "email":"baisakhi.622@gmail.com",
+    "password":"Deepayan"
+}
+
+
+###
+
+
+PATCH  http://localhost:6622/user/633005622017e741a5bfcee7
+Content-Type: application/json
+
+{
+    "projid":"Test Project"
+}
+
+
+
+
+
+
+
+
+
+###
+
+GET http://localhost:6622/branchoffice
+
+
+
+###
+
+POST http://localhost:6622/branchoffice
+Content-Type: application/json
+
+{
+    "branchname":"Pasadena, TX 77506",
+    "address":"Houston 312 Richey St. Pasadena, TX 77506"
+}
+
+###
+
+GET http://localhost:6622/branchoffice/632e0e01fde62f5bbe7ac7fe
+
+###
+#todo
+GET http://localhost:6622/branchoffice/branchlist
+
+
+###
+
+POST http://localhost:6622/consumeables
+Content-Type: application/json
+
+{
+    "name":"RT Source",
+    "stockQnt":"10",
+    "dispatchQnt":"0",
+    "desc":"",
+    "branchID":"1",
+}
+
+
+###
+
+GET http://localhost:6622/consumeables
+
+
+
+
+###
+
+GET http://localhost:6622/consumeables/632eaaad8338b0c811324d5c
+
+
+
+###
+
+POST http://localhost:6622/equipements
+Content-Type: application/json
+
+{
+    "name":"Film",
+    "availableQnt":"100",
+    "dispatchQnt":"20",
+    "branchID":"aakjsdbakjsd0"
+}
+
+###
+
+GET http://localhost:6622/equipements
+
+
+
+{
+    "submitdate":"2022-10-03",
+    "status":0,
+    "branchID":"ydgauhs",
+    "Po":"PoTest",
+    "Wo":"WoTest",
+    "st":8,
+    "ot":4,
+    "tt":1
+}

@@ -1,0 +1,54 @@
+const mongoos=require("mongoose")
+
+const servicesSchema= new mongoos.Schema({
+    ServiceName:{
+        type:String,
+        required:true
+    },
+    ServiceCategory:{
+        type:String,
+        required:true
+    },
+    ServiceDescription:{
+        type:String,
+        required:true
+    },
+    Duration:{
+        type:Number,
+        required:true
+    },
+    ServiceCost:{
+        type:Number,
+        required:true
+    },
+    SellingCost:{
+        type:Number,
+        required:true
+    },
+    Taxrate:{
+        type:Number,
+        required:true
+    },
+    HsnCode:{
+        type:String,
+        required:true
+    },
+    ResourceType:{
+        type:Array,
+        required:true
+    },
+    IncludeTax:{
+        type:Number,
+        required:true
+    },
+    active:{
+        type:Boolean,
+        required:true
+    },
+    Branch:{
+        type:String,
+        required:true
+    },
+})
+
+module.exports=mongoos.model('services',servicesSchema)
