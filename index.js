@@ -45,14 +45,14 @@ app.use("/api/servicepackages",servicePackagesRouter)
 app.use("/api/clients",clientsRouter)
 
 
-const sslServer=https.createServer(
-    {
-        key:fs.readFileSync(path.join(__dirname, 'cert','key.pem')),
-        cert:fs.readFileSync(path.join(__dirname, 'cert','cert.pem')),
-    },app
-)
+// const sslServer=https.createServer(
+//     {
+//         key:fs.readFileSync(path.join(__dirname, 'cert','key.pem')),
+//         cert:fs.readFileSync(path.join(__dirname, 'cert','cert.pem')),
+//     },app
+// )
 
-sslServer.listen(3443,()=> console.log("https Server is listning!"))
+// sslServer.listen(3443,()=> console.log("https Server is listning!"))
 
 app.get('/s3url/:name',async (req,res)=>{
     console.log(req.params.name)
