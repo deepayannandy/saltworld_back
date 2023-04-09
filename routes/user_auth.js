@@ -68,7 +68,7 @@ router.post('/register',async (req,res)=>{
         email:req.body.email,
         UserType:req.body.UserType,
         UserBranch:req.body.UserBranch,
-        UserStatus:false, 
+        UserStatus:true, 
         password:hashedpassword,
         Status:"Pending",
         StatusBg:"#FEC90F",
