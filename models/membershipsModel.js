@@ -1,19 +1,19 @@
 const mongoos=require("mongoose")
 
 const membershipsSchema= new mongoos.Schema({
-    PackageName:{
+    MembershipName:{
         type:String,
         required:true
     },
-    PackageDescription:{
+    MembershipDescription:{
         type:String,
         required:true
     },
-    ServicesId:{
+    Services:{
         type:Array,
         required:true
     },
-    ServiceCost:{
+    MembershipCost:{
         type:Number,
         required:true
     },
@@ -35,6 +35,18 @@ const membershipsSchema= new mongoos.Schema({
     },
     Branch:{
         type:String,
+        required:true
+    },
+    isunlimited:{
+        type:Boolean,
+        required:true
+    },
+    count:{
+        type:Number,
+        required:true
+    },
+    validity:{
+        type:Number,
         required:true
     },
 })

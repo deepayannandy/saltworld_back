@@ -35,6 +35,43 @@ router.get('/:id', getServices,(req,res)=>{
     res.send(res.service)
 })
 
+router.patch('/:id', getServices,async (req,res)=>{
+    if(req.body.ServiceName!=null){
+        res.service.ServiceName=req.body.ServiceName
+    }
+    if(req.body.ServiceCategory!=null){
+        res.service.ServiceCategory=req.body.ServiceCategory
+    }
+    if(req.body.ServiceDescription!=null){
+        res.service.ServiceDescription=req.body.ServiceDescription
+    }
+    if(req.body.Duration!=null){
+        res.service.Duration=req.body.Duration
+    }
+    if(req.body.ServiceCost!=null){
+        res.service.ServiceCost=req.body.ServiceCost
+    }
+    if(req.body.SellingCost!=null){
+        res.service.SellingCost=req.body.SellingCost
+    }
+    if(req.body.Taxrate!=null){
+        res.service.Taxrate=req.body.Taxrate
+    }
+    if(req.body.HsnCode!=null){
+        res.service.HsnCode=req.body.HsnCode
+    }
+    if(req.body.active!=null){
+        res.service.active=req.body.active
+    }
+    try{
+        const newservice=await  res.service.save()
+        res.status(201).json(newservice._id)
+    }
+    catch(error){
+        res.status(400).json({message:error.message})
+    }
+})
+
 
 
 //get all services

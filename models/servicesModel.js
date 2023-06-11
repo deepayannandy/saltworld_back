@@ -34,7 +34,7 @@ const servicesSchema= new mongoos.Schema({
         required:true
     },
     ResourceType:{
-        type:Array,
+        type:String,
         required:true
     },
     IncludeTax:{

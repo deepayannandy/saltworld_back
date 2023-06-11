@@ -45,6 +45,10 @@ const userSchema= new mongoos.Schema({
         type:String,
         required:false
     },
+    memberships:{
+        type:Array,
+        required:false
+    },
 })
 
 module.exports=mongoos.model('User',userSchema )
