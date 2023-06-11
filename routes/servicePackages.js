@@ -36,23 +36,70 @@ router.get('/:id', getServices,(req,res)=>{
 })
 
 
+//get a service
+router.patch('/:id', getServices,async (req,res)=>{
+    if(req.body.PackageName!=null){
+        res.service.PackageName=req.body.PackageName
+    }
+    if(req.body.PackageDescription!=null){
+        res.service.PackageDescription=req.body.PackageDescription
+    }
+    if(req.body.ServicesId!=null){
+        res.service.ServicesId=req.body.ServicesId
+    }
+    if(req.body.ServiceCost!=null){
+        res.service.ServiceCost=req.body.ServiceCost
+    }
+    if(req.body.SellingCost!=null){
+        res.service.SellingCost=req.body.SellingCost
+    }
+    if(req.body.Taxrate!=null){
+        res.service.Taxrate=req.body.Taxrate
+    }
+    if(req.body.HsnCode!=null){
+        res.service.HsnCode=req.body.HsnCode
+    }
+    try{
+        const newservice=await  res.service.save()
+        res.status(201).json(newservice._id)
+    }
+    catch(error){
+        res.status(400).json({message:error.message})
+    }
+})
+
 
 //get all services
 router.get('/',async (req,res)=>{
     try{
-        const Services=await servicePackages.find()
-        res.json(Services)
+        const servicep=await servicePackages.find()
+        res.json(servicep)
     }catch(error){
         res.status(500).json({message: error.message})
     }
 })
 
+router.delete("/:id",async (req,res)=>{
+    console.log(req.params.id)
+    s=await servicePackages.findById(req.params.id)
+        if(s==null){
+            return res.status(404).json({message:"Package unavailable!"})
+        }
+    try{
+        const reasult= await servicePackages.deleteOne({_id: new mongodb.ObjectId(req.params.id)})
+        res.json(reasult)
+    }catch(error){
+        res.status(500).json({message: error.message})
+    }
+})
+
+
 //middleware
 async function getServices(req,res,next){
     let service
     try{
-        service=await servicePackages.findById(req.params.id)
-        if(service==null){
+        servicep=await servicePackages.findById(req.params.id)
+        if(servicep==null){
             return res.status(404).json({message:"Branch unavailable!"})
         }
 
