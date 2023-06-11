@@ -5,11 +5,12 @@ const verifie_token= require("../validators/verifyToken")
 const mongodb=require("mongodb");
 //add services
 router.post('/',verifie_token,async (req,res)=>{
-    if (req.tokendata.UserType!="Admin") return res.status(500).json({message:"Access Pohibited!"})
-    let foundservices= await service.find({"ServiceName":req.body.ServiceName})
+    if (req.tokendata.UserType!="Admin") return res.status(400).json({message:"Access Pohibited!"})
+    let foundservices= await services.find({"ServiceName":req.body.ServiceName})
     if (foundservices==null)
     {
         res.status(400).json({message:"The Service name is already availabe!"})
+        return 
     }
     const service= new services({
         ServiceName:req.body.ServiceName,
