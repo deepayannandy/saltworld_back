@@ -6,7 +6,11 @@ const mongodb=require("mongodb");
 //add services
 router.post('/',verifie_token,async (req,res)=>{
     if (req.tokendata.UserType!="Admin") return res.status(500).json({message:"Access Pohibited!"})
-    console.log()
+    let foundservices= await service.find({"ServiceName":req.body.ServiceName})
+    if (foundservices==null)
+    {
+        res.status(400).json({message:"The Service name is already availabe!"})
+    }
     const service= new services({
         ServiceName:req.body.ServiceName,
         ServiceCategory:req.body.ServiceCategory,
