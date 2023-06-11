@@ -7,14 +7,10 @@ const mongodb=require("mongodb");
 //add services
 router.post('/',verifie_token,async (req,res)=>{
     if (req.tokendata.UserType!="Admin") return res.status(500).json({message:"Access Pohibited!"})
-    let servicesDetails=[]
-    for (serviceid in req.body.ServicesId){
-        console.log(serviceid)
-    }
     const servicePackage= new servicePackages({
         PackageName:req.body.PackageName,
         PackageDescription:req.body.PackageDescription,
-        ServicesId:servicesDetails,
+        ServicesId: req.body.ServicesId,
         ServiceCost:req.body.ServiceCost,
         SellingCost:req.body.SellingCost,
         Taxrate:req.body.Taxrate,
@@ -107,7 +103,7 @@ async function getServices(req,res,next){
     }catch(error){
         res.status(500).json({message: error.message})
     }
-    res.service=service
+    res.service=servicep
     next()
 }
 module.exports=router
