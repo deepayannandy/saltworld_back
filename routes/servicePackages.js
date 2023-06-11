@@ -97,7 +97,7 @@ router.delete("/:id",async (req,res)=>{
 
 //middleware
 async function getServices(req,res,next){
-    let service
+    let servicep
     try{
         servicep=await servicePackages.findById(req.params.id)
         if(servicep==null){
