@@ -149,6 +149,12 @@ router.get('/getall/get',async (req,res)=>{
 router.patch('/:id',verifie_token, getUser,async(req,res)=>{
     console.log(req.tokendata.UserType);
     if (req.tokendata.UserType!="Admin") return res.status(500).json({message:"Access Pohibited!"})
+    if(req.body.FirstName!=null){
+        res.user.FirstName=req.body.FirstName;
+    }
+    if(req.body.LastName!=null){
+        res.user.LastName=req.body.LastName;
+    }
     if(req.body.email!=null){
         res.user.email=req.body.email;
     }
