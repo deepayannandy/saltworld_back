@@ -133,6 +133,21 @@ router.get('/:id', getClient,(req,res)=>{
     res.send(res.client)
 })
 
+router.delete("/:id",async (req,res)=>{
+    console.log(req.params.id)
+    clientdata=await clientModel.findById(req.params.id)
+        if(clientdata==null){
+            return res.status(404).json({message:"Client Data unavailable!"})
+        }
+
+    try{
+        const reasult= await clientModel.deleteOne({_id: new mongodb.ObjectId(req.params.id)})
+        res.json(reasult)
+    }catch(error){
+        res.status(500).json({message: error.message})
+    }
+})
+
 
 
 //get all clients
