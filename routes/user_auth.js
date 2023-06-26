@@ -163,16 +163,9 @@ router.patch('/:id',verifie_token, getUser,async(req,res)=>{
     }
     if(req.body.UserStatus!=null){
         res.user.UserStatus=req.body.UserStatus;
-        if (req.body.UserStatus==false){
-            res.user.Status="Pending";
-            res.user.StatusBg="#FEC90F";
-        }
-        else{
-            res.user.Status="Active";
-            res.user.StatusBg="#8BE78B";
-        }
     }
     if(req.body.UserType!=null){
+        
         res.user.UserType=req.body.UserType;
     }
     try{

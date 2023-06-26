@@ -69,6 +69,65 @@ Team Salt World`
     }
 })
 
+
+router.patch('/:id',verifie_token, getClient,async(req,res)=>{
+    console.log(req.tokendata.UserType);
+    if (req.tokendata.UserType!="Admin") return res.status(500).json({message:"Access Pohibited!"})
+    if(req.body.FirstName!=null){
+        res.client.FirstName=req.body.FirstName;
+    }
+    if(req.body.LastName!=null){
+        res.client.LastName=req.body.LastName;
+    }
+    if(req.body.Email!=null){
+        res.client.Email=req.body.Email;
+    }
+    if(req.body.MobileNumber!=null){
+        res.client.MobileNumber=req.body.MobileNumber;
+    }
+    if(req.body.Gender!=null){
+        res.client.Gender=req.body.Gender;
+    }
+    if(req.body.DateofBirth!=null){
+        res.client.DateofBirth=req.body.DateofBirth;
+    }
+    if(req.body.Anniversary!=null){
+        res.client.Anniversary=req.body.Anniversary;
+    }
+    if(req.body.Occupation!=null){
+        res.client.Occupation=req.body.Occupation;
+    }
+    if(req.body.ClientSource!=null){
+        res.client.ClientSource=req.body.ClientSource;
+    }
+    if(req.body.PAN!=null){
+        res.client.PAN=req.body.PAN;
+    }
+    if(req.body.GST!=null){
+        res.client.GST=req.body.GST;
+    }
+    if(req.body.CompanyLegalName!=null){
+        res.client.CompanyLegalName=req.body.CompanyLegalName;
+    }
+    if(req.body.CompanyTradeName!=null){
+        res.client.CompanyTradeName=req.body.CompanyTradeName;
+    }
+    if(req.body.ParentBranchId!=null){
+        res.client.ParentBranchId=req.body.ParentBranchId;
+    }
+    if(req.body.BillingAddress!=null){
+        res.client.BillingAddress=req.body.BillingAddress;
+    }
+    if(req.body.ShippingAddress!=null){
+        res.client.ShippingAddress=req.body.ShippingAddress;
+    }
+    try{
+        const newclient=await res.client.save()
+        res.status(201).json({"_id":newclient.id})
+    }catch(error){
+        res.status(500).json({message: error.message})
+    }
+})
 //get a clients
 router.get('/:id', getClient,(req,res)=>{
     res.send(res.client)
