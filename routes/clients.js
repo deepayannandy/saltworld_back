@@ -122,6 +122,9 @@ router.patch('/:id',verifie_token, getClient,async(req,res)=>{
     if(req.body.ShippingAddress!=null){
         res.client.ShippingAddress=req.body.ShippingAddress;
     }
+    if(req.body.Memberships!=null){
+        res.client.Memberships=req.body.Memberships;
+    }
     try{
         const newclient=await res.client.save()
         res.status(201).json({"_id":newclient.id})
@@ -149,12 +152,22 @@ router.delete("/:id",async (req,res)=>{
     }
 })
 
+router.get("/search/:para",async (req,res)=>{
+    console.log(req.params.para)
+    try{
+        const clients=await clientModel.find()
+        let filteredlist=clients.filter((client)=>{if(client.FirstName.toLowerCase().includes(req.params.para) || client.LastName.toLowerCase().includes(req.params.para))return client})
+        res.json(filteredlist)
+    }catch(error){
+        res.status(500).json({message: error.message})
+    }
+})
 
 
 //get all clients
 router.get('/',async (req,res)=>{
     try{
-        const clients=await clientModel.find()
+        const clients=await clientModel.find().limit(10)
         res.json(clients)
     }catch(error){
         res.status(500).json({message: error.message})

@@ -1,0 +1,45 @@
+const mongoos=require("mongoose")
+
+const scheduleSchema= new mongoos.Schema({
+    clientname:{
+        type:String,
+        required:true
+    },
+    personcount:{
+        type:Number,
+        required:true
+    },
+    reschedulecount:{
+        type:Number,
+        required:true
+    },
+    clientid:{
+        type:String,
+        required:true
+    },
+    startdatetime:{
+        type:Date,
+        required:true
+    },
+    enddatetime:{
+        type:Date,
+        required:true
+    },
+    resource:{
+        type:String,
+        required:true
+    },
+    titel:{
+        type:String,
+        required:true
+    },
+    servicedetails:{
+        type:String,
+        required:true
+    },
+    duration:{
+        type:Number,
+        required:true
+    },
+})
+module.exports=mongoos.model('Schedule',scheduleSchema)

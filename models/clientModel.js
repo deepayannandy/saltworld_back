@@ -77,6 +77,10 @@ const clientSchema= new mongoos.Schema({
         type:String,
         required:true
     },
+    Memberships:{
+        type:Object,
+        required:false
+    },
 })
 
 module.exports=mongoos.model('Client',clientSchema)

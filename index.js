@@ -37,6 +37,7 @@ const servicesRouter= require("./routes/services")
 const servicePackagesRouter= require("./routes/servicePackages")
 const clientsRouter= require("./routes/clients")
 const membershipsRouter= require("./routes/memberships")
+const scheduleRouter= require("./routes/schedule")
 
 app.use("/api/user",userRouter)
 app.use("/api/branchs",branchOfficeRouter)
@@ -44,6 +45,7 @@ app.use("/api/services",servicesRouter)
 app.use("/api/servicepackages",servicePackagesRouter)
 app.use("/api/clients",clientsRouter)
 app.use("/api/memberships",membershipsRouter)
+app.use("/api/schedule",scheduleRouter)
 
 
 // const sslServer=https.createServer(
