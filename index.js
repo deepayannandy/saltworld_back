@@ -10,6 +10,7 @@ const mongoos=require("mongoose");
 const aws =require('aws-sdk');
 const { crypto, randomBytes } =require('crypto');
 
+process.env.TZ = "Asia/Calcutta";
 const region=process.env.region;
 const bucketName=process.env.bucketName;
 const accessKeyId=process.env.accessKeyId;

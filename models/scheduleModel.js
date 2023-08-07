@@ -29,7 +29,7 @@ const scheduleSchema= new mongoos.Schema({
         type:String,
         required:true
     },
-    titel:{
+    title:{
         type:String,
         required:true
     },
@@ -39,6 +39,10 @@ const scheduleSchema= new mongoos.Schema({
     },
     duration:{
         type:Number,
+        required:true
+    },
+    location:{
+        type:String,
         required:true
     },
 })
