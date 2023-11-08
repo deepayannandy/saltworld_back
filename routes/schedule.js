@@ -114,6 +114,22 @@ router.get('/existing/:time&:service&:duration',async (req,res)=>{
     }
 })
 
+router.get('/searchbydate/:starttime&:endtime&:branch',async (req,res)=>{
+  console.log(req.params.starttime)
+  console.log(req.params.endtime)
+  console.log(req.params.branch)
+  let starttime=new Date(req.params.starttime)
+  let endtime= new Date(req.params.endtime)
+  console.log(starttime+" "+endtime)
+  try{
+      const schedules= await schedulemodel.find({startdatetime :{$gte: starttime,$lte:endtime},location :req.params.branch })
+      res.json(schedules)
+  }catch(error){
+      res.status(500).json({message: error.message})
+  }
+})
+
+
 //reschedule 
 router.patch('/:id',getSchedule ,async (req,res)=>{
     console.log(res.schedule)
