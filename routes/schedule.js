@@ -81,9 +81,20 @@ For any assistance dial / WhatsApp: +91 7687878793
     }
 })
 
-//get a service
+//get a Schedule
 router.get('/:id', getSchedule,(req,res)=>{
     res.send(res.schedule)
+})
+
+//get a Schedule by Userid 
+router.get('/byuser/:uid',async (req,res)=>{
+  let schedule
+    try{
+        schedule=await schedulemodel.find({clientid:req.params.uid})
+  }catch(e){
+    res.statusCode(404).send({message:"Something went wrong"})
+  }
+  res.send(schedule)
 })
 
 //get all services
