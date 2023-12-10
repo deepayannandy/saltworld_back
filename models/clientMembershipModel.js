@@ -1,15 +1,21 @@
+const { object } = require("joi")
 const mongoos=require("mongoose")
 
 const clientmembershipsSchema= new mongoos.Schema({
+    clientid:
+    {
+        type:String,
+        required:true
+    },
     MembershipName:{
         type:String,
         required:true
     },
     Services:{
-        type:Array,
+        type:Object,
         required:true
     },
-    MembershipCost:{
+    paidAmount:{
         type:Number,
         required:true
     },
@@ -25,16 +31,20 @@ const clientmembershipsSchema= new mongoos.Schema({
         type:Boolean,
         required:true
     },
-    isunlimited:{
-        type:Boolean,
-        required:true
-    },
     count:{
         type:Number,
         required:true
     },
-    validity:{
+    countleft:{
         type:Number,
+        required:true
+    },
+    StartDate:{
+        type:Date,
+        required:true
+    },
+    EndDate:{
+        type:Date,
         required:true
     },
 })

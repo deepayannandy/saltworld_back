@@ -40,6 +40,7 @@ const clientsRouter= require("./routes/clients")
 const membershipsRouter= require("./routes/memberships")
 const scheduleRouter= require("./routes/schedule")
 const notesRouter= require("./routes/clientNotes")
+const clientMembershipRouter= require("./routes/clientMemberships")
 
 app.use("/api/user",userRouter)
 app.use("/api/branchs",branchOfficeRouter)
@@ -49,6 +50,7 @@ app.use("/api/clients",clientsRouter)
 app.use("/api/memberships",membershipsRouter)
 app.use("/api/schedule",scheduleRouter)
 app.use("/api/notes",notesRouter)
+app.use("/api/client_memberships",clientMembershipRouter)
 
 
 app.get('/s3url/:name',async (req,res)=>{
