@@ -1,50 +1,62 @@
-const express = require("express");
-const router = express.Router();
-const clientMembershipsModel = require("../models/clientMembershipModel");
-const verifie_token = require("../validators/verifyToken");
-const _ = require("lodash");
+import { Router } from "express";
+import verifyToken from "../validators/verifyToken";
+import membershipsModel, { Membership } from "../models/membershipsModel";
+import servicesModel from "../models/servicesModel";
+import { clientMembershipCreateValidator } from "../validators/clientMembershipCreateValidator";
+import { Client } from "../models/clientModel";
+
+const router = Router();
 
 //add services
-router.post("/", verifie_token, async (req, res) => {
-  if (req.tokendata.UserType != "Admin")
-    return res.status(500).json({ message: "Access Pohibited!" });
-  var StartDate = new Date(req.body.StartDate);
-  var EndDate = new Date(
-    StartDate + req.body.validDuration * 24 * 60 * 60 * 1000
+router.post("/:clientId", verifyToken, async (req, res) => {
+  if (req.tokendata.UserType !== "Admin") {
+    return res.status(500).json({ message: "Access Prohibited!" });
+  }
+  const { value } = clientMembershipCreateValidator(req.body);
+
+  const startDate = new Date(req.body.startDate);
+  const endDate = new Date(
+    startDate + req.body.validDuration * 24 * 60 * 60 * 1000
   );
-  const clientmembeship = new clientMembershipsModel({
-    clientid: req.body.clientid,
-    MembershipName: req.body.MembershipName,
-    Services: req.body.Services,
-    paidAmount: req.body.paidAmount,
-    Taxrate: req.body.Taxrate,
-    HsnCode: req.body.HsnCode,
-    active: true,
-    count: req.body.count,
-    countleft: req.body.count,
-    StartDate: StartDate,
-    EndDate: EndDate,
-  });
+
+  let client = await Client.findById(req.params.clientId);
+  if (!client) {
+    return res.status(404).json({ message: "Client Data not found!" });
+  }
+
   try {
-    const newclientmembeship = await clientmembeship.save();
-    res.status(201).json(newclientmembeship._id);
+    client.clientMemberships.push({ ...value, endDate });
+    client = await client.save();
+    const latestClientMembership = client.clientMemberships.find(
+      (clientMembership) => clientMembership.membershipId === value.membershipId
+    );
+
+    res.status(201).json(latestClientMembership._id);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 });
 
-router.get("/:clientid", verifie_token, async (req, res) => {
-  if (req.tokendata.UserType != "Admin")
-    return res.status(500).json({ message: "Access Pohibited!" });
-  try {
-    const clientMemberships = await clientMembershipsModel.find({
-      clientid: req.params.clientid,
-    });
+router.get("/:clientId", verifyToken, async (req, res) => {
+  if (req.tokendata.UserType !== "Admin") {
+    return res.status(500).json({ message: "Access Prohibited!" });
+  }
 
+  const client = await Client.findById(req.params.clientId);
+  if (!client) {
+    return res.status(404).json({ message: "Client Data not found!" });
+  }
+
+  try {
     const clientMembershipData = [];
-    for (const clientMembership of clientMemberships) {
-      let data = _.omit(clientMembership.toObject(), "Services");
-      for (const service of clientMembership.Services) {
+    for (const clientMembership of client.clientMemberships) {
+      let data = clientMembership;
+      const membership = await membershipsModel.findById(
+        clientMembership.membershipId
+      );
+      data = Object.assign({}, data, membership);
+      for (const serviceId of membership.serviceIds) {
+        const service = await servicesModel.findById(serviceId);
         data = Object.assign({}, data, service);
         clientMembershipData.push(data);
       }
@@ -56,26 +68,41 @@ router.get("/:clientid", verifie_token, async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
-  const clientMembership = await clientMembershipsModel.findById(req.params.id);
-  if (!clientMembership) {
-    return res.status(404).json({ message: "Membership not found" });
+router.delete("/:id", verifyToken, async (req, res) => {
+  if (req.tokendata.UserType !== "Admin") {
+    return res.status(400).json({ message: "Access Prohibited!" });
   }
 
-  try {
-    const deleteResult = await clientMembershipsModel.deleteOne({
-      _id: new mongodb.ObjectId(req.params.id),
-    });
+  const client = await Client.findById(req.body.clientId);
+  if (!client) {
+    return res.status(404).json({ message: "Client not found" });
+  }
 
-    if (deleteResult.acknowledged) {
-      return res
-        .status(200)
-        .json({
-          message: `${clientMembership.MembershipName} ${clientMembership.HsnCode} is deleted.`,
-        });
-    }
+  if (!client.clientMemberships?.length) {
+    return res.status(404).json({ message: "Client memberships not found" });
+  }
+
+  const clientMembership = client.clientMemberships.find(
+    (clientMembership) => clientMembership._id === req.params.id
+  );
+  if (!clientMembership) {
+    return res.status(404).json({ message: "Client membership not found" });
+  }
+
+  const membership = await Membership.findById(clientMembership.membershipId);
+
+  client.clientMemberships = client.clientMemberships.filter(
+    (clientMembership) => clientMembership.id !== req.params.id
+  );
+
+  try {
+    await client.save();
+    return res.status(200).json({
+      message: `${membership.name} ${membership.hsnCode} membership is deleted.`,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
-module.exports = router;
+
+export default router;
