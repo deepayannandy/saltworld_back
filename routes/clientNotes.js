@@ -1,8 +1,8 @@
 import { format } from "date-fns";
 import { Router } from "express";
-import verifyToken from "../validators/verifyToken";
-import { clientNotesCreateValidator } from "../validators/clientNotesCreateValidator";
-import { Client } from "../models/clientModel";
+import verifyToken from "../validators/verifyToken.js";
+import { clientNotesCreateValidator } from "../validators/clientNotesCreateValidator.js";
+import Client from "../models/clientModel.js";
 
 const router = Router();
 

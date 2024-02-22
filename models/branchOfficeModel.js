@@ -1,6 +1,6 @@
-const mongoos=require("mongoose")
+import { Schema, model } from "mongoose"
 
-const branchSchema= new mongoos.Schema({
+const branchSchema= new Schema({
     BranchName:{
         type:String,
         required:true
@@ -31,4 +31,4 @@ const branchSchema= new mongoos.Schema({
     },
 })
 
-module.exports=mongoos.model('Branch',branchSchema)
+export default model('Branch', branchSchema);

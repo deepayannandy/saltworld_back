@@ -1,14 +1,19 @@
-const express = require("express")
-const router= express.Router()
-const usermodel=require("../models/userModel")
-const validator= require("../validators/validation")
-const bcrypt = require("bcryptjs")
-const jwt= require("jsonwebtoken")
-const nodemailer = require('nodemailer');
-const mongodb=require("mongodb");
-require("dotenv").config()
+import { Router } from "express";
+import User from "../models/userModel.js";
+import { login_validation, resistration_validation } from "../validators/validation.js";
+import bcryptjs from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { createTransport } from 'nodemailer';
+import { ObjectId } from "mongodb";
+import verifyToken from "../validators/verifyToken.js";
+import { config } from "dotenv";
 
-const transporter = nodemailer.createTransport({
+const { compare, genSalt, hash } = bcryptjs;
+const { sign } = jwt;
+
+const router= Router()
+
+const transporter = createTransport({
   service: 'gmail',
   auth: {
     user: 'appsdny@gmail.com',
@@ -18,25 +23,23 @@ const transporter = nodemailer.createTransport({
   host:"smtp.gmail.com"
 });
 
-const verifie_token= require("../validators/verifyToken")
-
 //login user
-router.post('/login',async (req,res)=>{
+router.post('/login', async (req,res)=>{
     //validate the data
-    const valid=validator.login_validation(req.body);
+    const valid=login_validation(req.body);
     if(valid.error){
         return res.status(400).send({"message":valid.error.details[0].message});
     };
-    const user=await usermodel.findOne({email:req.body.email});
+    const user=await User.User.findOne({email:req.body.email});
     if(!user) return res.status(400).send({"message":"User dose not exist!"});
 
     // validate password
-    const validPass=await bcrypt.compare(req.body.password,user.password);
+    const validPass=await compare(req.body.password,user.password);
     if(!validPass) return res.status(400).send({"message":"Emailid or password is invalid!"});
     if (!user.UserStatus) return res.status(400).send({"message":"User is not an active user!"});
 
     //create and assign token
-    const token= jwt.sign({_id:user._id,UserType:user.UserType},process.env.SECREAT_TOKEN);
+    const token= sign({_id:user._id,UserType:user.UserType},process.env.SECREAT_TOKEN);
     res.header('auth-token',token).send(token);
 })
 //create user
@@ -47,21 +50,21 @@ router.post('/register',async (req,res)=>{
     let month = date_ob.getMonth() + 1;
     let year = date_ob.getFullYear();
     //validate the data
-    const valid=validator.resistration_validation(req.body);
+    const valid=resistration_validation(req.body);
     if(valid.error){
         return res.status(400).send(valid.error.details[0].message);
     }
-    const email_exist=await usermodel.findOne({email:req.body.email});
+    const email_exist=await User.User.findOne({email:req.body.email});
     if(email_exist) return res.status(400).send({"message":"Email already exist!"});
 
     //hash the password
-    const salt= await bcrypt.genSalt(10);
-    const hashedpassword= await bcrypt.hash(req.body.password,salt);
+    const salt= await genSalt(10);
+    const hashedpassword= await hash(req.body.password,salt);
     
     const datenow=year + "-" + ("0" + month).slice(-2) + "-" + ("0" + date).slice(-2);
     console.log(datenow);
     console.log(req.body.nickname);
-    const user= new usermodel({
+    const user= new User({
         FirstName:req.body.FirstName,
         LastName:req.body.LastName,
         mobile:req.body.mobile,
@@ -114,22 +117,22 @@ router.get('/:id' ,getUser, (req,res,)=>{
     res.send(res.user)
 })
 // get my data
-router.get("/mydata/me",verifie_token,async (req,res)=>{
+router.get("/mydata/me",verifyToken,async (req,res)=>{
     console.log(req.tokendata._id)
-    const user=await usermodel.findOne({_id:req.tokendata._id});
+    const user=await User.User.findOne({_id:req.tokendata._id});
     if(!user) return res.status(400).send({"message":"User dose not exist!"});
     res.send(user)
 
 })
 
 //get all user
-router.get('/',verifie_token,async (req,res)=>{
-    const user=await usermodel.findOne({_id:req.tokendata._id});
+router.get('/',verifyToken,async (req,res)=>{
+    const user=await User.User.findOne({_id:req.tokendata._id});
     if(!user) return res.status(400).send({"message":"User dose not exist!"});
     if(!user.UserBranch) return res.status(400).send({"message":"No Employee branch found"});
     console.log(user.UserBranch)
     try{
-        const users=await usermodel.find({UserBranch:user.UserBranch});
+        const users=await User.find({UserBranch:user.UserBranch});
         res.json(users)
     }catch(error){
         res.status(500).json({message: error.message})
@@ -137,7 +140,7 @@ router.get('/',verifie_token,async (req,res)=>{
 })
 router.get('/getall/get',async (req,res)=>{
     try{
-        const users=await usermodel.find();
+        const users=await User.find();
         res.json(users)
     }catch(error){
         res.status(500).json({message: error.message})
@@ -146,7 +149,7 @@ router.get('/getall/get',async (req,res)=>{
 
 
 //update user
-router.patch('/:id',verifie_token, getUser,async(req,res)=>{
+router.patch('/:id',verifyToken, getUser,async(req,res)=>{
     console.log(req.tokendata.UserType);
     if (req.tokendata.UserType!="Admin") return res.status(500).json({message:"Access Pohibited!"})
     if(req.body.FirstName!=null){
@@ -179,14 +182,14 @@ router.patch('/:id',verifie_token, getUser,async(req,res)=>{
 
 router.delete("/:id",async (req,res)=>{
     console.log(req.params.id)
-    user=await usermodel.findById(req.params.id)
+    user=await User.User.findById(req.params.id)
         if(user==null){
             return res.status(404).json({message:"User unavailable!"})
         }
 
 
     try{
-        const reasult= await usermodel.deleteOne({_id: new mongodb.ObjectId(req.params.id)})
+        const reasult= await User.deleteOne({_id: new ObjectId(req.params.id)})
         res.json(reasult)
     }catch(error){
         res.status(500).json({message: error.message})
@@ -197,7 +200,7 @@ router.delete("/:id",async (req,res)=>{
 async function getUser(req,res,next){
     let user
     try{
-        user=await usermodel.findById(req.params.id)
+        user=await User.User.findById(req.params.id)
         if(user==null){
             return res.status(404).json({message:"User unavailable!"})
         }
@@ -208,4 +211,5 @@ async function getUser(req,res,next){
     res.user=user
     next()
 }
-module.exports=router
+
+export default router;

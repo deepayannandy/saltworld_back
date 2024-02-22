@@ -1,11 +1,8 @@
 import { Router } from "express";
-import {
-  findById,
-  Service,
-} from "../models/servicesModel";
-import verifyToken from "../validators/verifyToken";
-import { serviceCreateValidator } from "../validators/serviceCreateValidator";
-import { serviceUpdateValidator } from "../validators/serviceUpdateValidator";
+import Service from "../models/servicesModel.js";
+import verifyToken from "../validators/verifyToken.js";
+import { serviceCreateValidator } from "../validators/serviceCreateValidator.js";
+import { serviceUpdateValidator } from "../validators/serviceUpdateValidator.js";
 
 const router = Router();
 
@@ -45,7 +42,7 @@ router.patch("/:id", verifyToken, async (req, res) => {
     return res.status(400).json({ message: "Access Prohibited!" });
   }
 
-  const service = await Service.findById(req.params.id);
+  const service = await Service.Service.findById(req.params.id);
   if (!service) {
     return res.status(404).json({ message: "Service not found!" });
   }
@@ -74,7 +71,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
     return res.status(400).json({ message: "Access Prohibited!" });
   }
 
-  const service = await Service.findById(req.params.id);
+  const service = await Service.Service.findById(req.params.id);
   if (!service) {
     return res.status(404).json({ message: "Service not found!" });
   }
@@ -91,7 +88,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
 async function getServices(req, res, next) {
   let service;
   try {
-    service = await findById(req.params.id);
+    service = await Service.findById(req.params.id);
     if (!service) {
       return res.status(404).json({ message: "Service not found!" });
     }

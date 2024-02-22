@@ -1,9 +1,9 @@
 import { Router } from "express";
-import verifyToken from "../validators/verifyToken";
-import membershipsModel, { Membership } from "../models/membershipsModel";
-import servicesModel from "../models/servicesModel";
-import { clientMembershipCreateValidator } from "../validators/clientMembershipCreateValidator";
-import { Client } from "../models/clientModel";
+import verifyToken from "../validators/verifyToken.js";
+import Membership from "../models/membershipsModel.js";
+import servicesModel from "../models/servicesModel.js";
+import { clientMembershipCreateValidator } from "../validators/clientMembershipCreateValidator.js";
+import Client from "../models/clientModel.js";
 
 const router = Router();
 

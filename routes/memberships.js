@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { find, findById, Membership } from "../models/membershipsModel";
-import { membershipCreateValidator } from "../validators/membershipCreateValidator";
-import verifyToken from "../validators/verifyToken";
+import Membership from "../models/membershipsModel.js";
+import { membershipCreateValidator } from "../validators/membershipCreateValidator.js";
+import verifyToken from "../validators/verifyToken.js";
 
 const router = Router();
 
@@ -30,7 +30,7 @@ router.get("/:id", getMemberships, (res) => {
 //get all services
 router.get("/", async (res) => {
   try {
-    const allMemberships = await find();
+    const allMemberships = await Membership.find();
     res.json(allMemberships);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -41,7 +41,7 @@ router.get("/", async (res) => {
 async function getMemberships(req, res, next) {
   let membership;
   try {
-    membership = await findById(req.params.id);
+    membership = await Membership.findById(req.params.id);
     if (!membership) {
       return res.status(404).json({ message: "Membership not found!" });
     }

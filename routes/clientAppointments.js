@@ -1,12 +1,11 @@
 import { Router } from "express";
-import { Client, findById } from "../models/clientModel";
-import verifyToken from "../validators/verifyToken";
+import Client from "../models/clientModel.js";
+import verifyToken from "../validators/verifyToken.js";
 import { createTransport } from "nodemailer";
-import { ObjectId } from "mongodb";
 import { format, addMinutes } from "date-fns";
-import { clientAppointmentCreateValidator } from "../validators/clientAppointmentCreateValidator";
-import { Service } from "../models/servicesModel";
-import { clientAppointmentRescheduleValidator } from "../validators/clientAppointmentRescheduleValidator";
+import { clientAppointmentCreateValidator } from "../validators/clientAppointmentCreateValidator.js";
+import Service from "../models/servicesModel.js";
+import { clientAppointmentRescheduleValidator } from "../validators/clientAppointmentRescheduleValidator.js";
 
 const router = Router();
 
@@ -86,7 +85,7 @@ router.post("/:clientId", verifyToken, async (req, res) => {
 });
 
 //get a appointment
-router.get("/:clientId", verifyToken, (req, res) => {
+router.get("/:clientId", verifyToken, async (req, res) => {
   if (req.tokendata.UserType !== "Admin") {
     return res.status(500).json({ message: "Access Prohibited!" });
   }

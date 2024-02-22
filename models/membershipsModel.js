@@ -51,4 +51,4 @@ const membershipsSchema = new Schema({
   },
 });
 
-export const Membership = model("Membership", membershipsSchema);
+export default model("Membership", membershipsSchema);

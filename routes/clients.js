@@ -1,9 +1,9 @@
 import { Router } from "express";
-import verifyToken from "../validators/verifyToken";
+import verifyToken from "../validators/verifyToken.js";
 import { createTransport } from "nodemailer";
-import { Client } from "../models/clientModel";
-import { clientCreateValidator } from "../validators/clientCreateValidator";
-import { clientUpdateValidator } from "../validators/clientUpdateValidator";
+import Client from "../models/clientModel.js";
+import { clientCreateValidator } from "../validators/clientCreateValidator.js";
+import { clientUpdateValidator } from "../validators/clientUpdateValidator.js";
 
 const router = Router();
 
@@ -127,3 +127,5 @@ router.get("/", async (res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
+export default router;

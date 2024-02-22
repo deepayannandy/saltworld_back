@@ -51,4 +51,4 @@ const servicesSchema = new Schema({
   },
 });
 
-export const Service = model("Service", servicesSchema);
+export default model("Service", servicesSchema);
