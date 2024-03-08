@@ -4,16 +4,12 @@ export const clientAppointmentCreateValidator = (data) => {
   const schema = joi
     .object()
     .keys({
-      title: joi.string().min(5).max(100),
       membershipId: joi.string(),
-      serviceId: joi.string(),
-      personCount: joi.number(),
-      rescheduleCount: joi.number(),
-      startDateTime: joi.date(),
-      resource: joi.string(),
-      branch: joi.string(),
+      serviceId: joi.string().required(),
+      personCount: joi.number().required(),
+      startDateTime: joi.date().required(),
+      branch: joi.string().required(),
+      duration: joi.number().required(),
     })
-    .options({ presence: "required" })
-    .required();
   return schema.validate(data);
 };

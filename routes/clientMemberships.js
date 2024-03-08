@@ -1,7 +1,7 @@
 import { Router } from "express";
 import verifyToken from "../validators/verifyToken.js";
 import Membership from "../models/membershipsModel.js";
-import servicesModel from "../models/servicesModel.js";
+import Services from "../models/servicesModel.js";
 import { clientMembershipCreateValidator } from "../validators/clientMembershipCreateValidator.js";
 import Client from "../models/clientModel.js";
 
@@ -50,14 +50,14 @@ router.get("/:clientId", verifyToken, async (req, res) => {
   try {
     const clientMembershipData = [];
     for (const clientMembership of client.clientMemberships) {
-      let data = clientMembership;
-      const membership = await membershipsModel.findById(
+      let data = clientMembership.toObject();
+      const membership = await Membership.findById(
         clientMembership.membershipId
       );
-      data = Object.assign({}, data, membership);
+      data = Object.assign({}, data, membership.toObject());
       for (const serviceId of membership.serviceIds) {
-        const service = await servicesModel.findById(serviceId);
-        data = Object.assign({}, data, service);
+        const service = await Services.findById(serviceId);
+        data = Object.assign({}, data, service.toObject());
         clientMembershipData.push(data);
       }
     }

@@ -33,7 +33,7 @@ router.post("/", verifyToken, async (req, res) => {
 });
 
 //get a service
-router.get("/:id", getServices, (res) => {
+router.get("/:id", verifyToken, getServices, (_, res) => {
   res.send(res.service);
 });
 
@@ -42,7 +42,7 @@ router.patch("/:id", verifyToken, async (req, res) => {
     return res.status(400).json({ message: "Access Prohibited!" });
   }
 
-  const service = await Service.Service.findById(req.params.id);
+  const service = await Service.findById(req.params.id);
   if (!service) {
     return res.status(404).json({ message: "Service not found!" });
   }
@@ -57,7 +57,7 @@ router.patch("/:id", verifyToken, async (req, res) => {
 });
 
 //get all services
-router.get("/", async (res) => {
+router.get("/", verifyToken, async (_, res) => {
   try {
     const services = await Service.find();
     res.json(services);
@@ -71,7 +71,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
     return res.status(400).json({ message: "Access Prohibited!" });
   }
 
-  const service = await Service.Service.findById(req.params.id);
+  const service = await Service.findById(req.params.id);
   if (!service) {
     return res.status(404).json({ message: "Service not found!" });
   }

@@ -1,12 +1,8 @@
 import dotenv from "dotenv";
-import https from "https";
 import cors from "cors";
-import fs from "fs";
-import path from "path";
 import express, { json } from "express";
 import mongoose from "mongoose";
 import aws_sdk from "aws-sdk";
-import crypto, { randomBytes } from "crypto";
 
 const app = express();
 const { S3 } = aws_sdk;
@@ -45,7 +41,7 @@ import notesRouter from "./routes/clientNotes.js";
 import clientMembershipRouter from "./routes/clientMemberships.js";
 
 app.use("/api/user", userRouter);
-app.use("/api/branchs", branchOfficeRouter);
+app.use("/api/branches", branchOfficeRouter);
 app.use("/api/services", servicesRouter);
 app.use("/api/servicepackages", servicePackagesRouter);
 app.use("/api/clients", clientsRouter);
@@ -55,7 +51,6 @@ app.use("/api/notes", notesRouter);
 app.use("/api/client_memberships", clientMembershipRouter);
 
 app.get("/s3url/:name", async (req, res) => {
-  console.log(req.params.name);
   const imagename = req.params.name;
 
   const params = {
@@ -66,6 +61,7 @@ app.get("/s3url/:name", async (req, res) => {
   const uploadUrl = await s3.getSignedUrlPromise("putObject", params);
   res.send({ uploadUrl });
 });
+
 app.listen(6622, () => {
   console.log("Http Server is listening!");
 });

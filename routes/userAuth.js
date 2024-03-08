@@ -1,215 +1,211 @@
 import { Router } from "express";
 import User from "../models/userModel.js";
-import { login_validation, resistration_validation } from "../validators/validation.js";
+import { login_validation } from "../validators/validation.js";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { createTransport } from 'nodemailer';
+import { createTransport } from "nodemailer";
 import { ObjectId } from "mongodb";
 import verifyToken from "../validators/verifyToken.js";
-import { config } from "dotenv";
+import _ from "lodash";
+import { registrationValidation } from "../validators/registrationValidation.js";
+import { registrationUpdateValidator } from "../validators/registrationUpdateValidator.js";
 
 const { compare, genSalt, hash } = bcryptjs;
 const { sign } = jwt;
 
-const router= Router()
+const router = Router();
 
 const transporter = createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
-    user: 'appsdny@gmail.com',
+    user: "appsdny@gmail.com",
     pass: process.env.MAILER_PASS,
   },
-  port:465,
-  host:"smtp.gmail.com"
+  port: 465,
+  host: "smtp.gmail.com",
 });
 
 //login user
-router.post('/login', async (req,res)=>{
-    //validate the data
-    const valid=login_validation(req.body);
-    if(valid.error){
-        return res.status(400).send({"message":valid.error.details[0].message});
-    };
-    const user=await User.User.findOne({email:req.body.email});
-    if(!user) return res.status(400).send({"message":"User dose not exist!"});
+router.post("/login", async (req, res) => {
+  //validate the data
+  const valid = login_validation(req.body);
+  if (valid.error) {
+    return res.status(400).send({ message: valid.error.details[0].message });
+  }
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) return res.status(400).send({ message: "User dose not exist!" });
 
-    // validate password
-    const validPass=await compare(req.body.password,user.password);
-    if(!validPass) return res.status(400).send({"message":"Emailid or password is invalid!"});
-    if (!user.UserStatus) return res.status(400).send({"message":"User is not an active user!"});
+  // validate password
+  const validPass = await compare(req.body.password, user.password);
+  if (!validPass)
+    return res.status(400).send({ message: "Emailid or password is invalid!" });
+  if (!user.UserStatus)
+    return res.status(400).send({ message: "User is not an active user!" });
 
-    //create and assign token
-    const token= sign({_id:user._id,UserType:user.UserType},process.env.SECREAT_TOKEN);
-    res.header('auth-token',token).send(token);
-})
+  //create and assign token
+  const token = sign(
+    { _id: user._id, UserType: user.UserType },
+    process.env.SECREAT_TOKEN
+  );
+  res.header("auth-token", token).send(token);
+});
+
 //create user
-router.post('/register',async (req,res)=>{
-    let ts = Date.now();
-    let date_ob = new Date(ts);
-    let date = date_ob.getDate();
-    let month = date_ob.getMonth() + 1;
-    let year = date_ob.getFullYear();
-    //validate the data
-    const valid=resistration_validation(req.body);
-    if(valid.error){
-        return res.status(400).send(valid.error.details[0].message);
-    }
-    const email_exist=await User.User.findOne({email:req.body.email});
-    if(email_exist) return res.status(400).send({"message":"Email already exist!"});
+router.post("/register", async (req, res) => {
+  const ts = Date.now();
+  const currentDate = new Date(ts);
+  const date = currentDate.getDate();
+  const month = currentDate.getMonth() + 1;
+  const year = currentDate.getFullYear();
+  //validate the data
 
-    //hash the password
-    const salt= await genSalt(10);
-    const hashedpassword= await hash(req.body.password,salt);
-    
-    const datenow=year + "-" + ("0" + month).slice(-2) + "-" + ("0" + date).slice(-2);
-    console.log(datenow);
-    console.log(req.body.nickname);
-    const user= new User({
-        FirstName:req.body.FirstName,
-        LastName:req.body.LastName,
-        mobile:req.body.mobile,
-        email:req.body.email,
-        UserType:req.body.UserType,
-        UserBranch:req.body.UserBranch,
-        UserStatus:true, 
-        password:hashedpassword,
-        Status:"Pending",
-        StatusBg:"#FEC90F",
-        onBoardingDate:datenow,
-    })
-    try{
-        const newUser=await user.save()
-        var regestereduserMail = {
-            from: 'appsdny@gmail.com',
-            to: req.body.email,
-            subject: 'Welcome to Salt World',
-            text: `Hi ${req.body.FirstName},
+  const { value, error } = registrationValidation(req.body);
+  if (error) {
+    return res.status(422).json({ message: error.message });
+  }
+  const email_exist = await User.findOne({ email: value.email });
+  if (email_exist) {
+    return res.status(400).json({ message: "Email already exist!" });
+  }
+
+  //hash the password
+  const salt = await genSalt(10);
+  const hashedPassword = await hash(value.password, salt);
+
+  const dateNow =
+    year + "-" + ("0" + month).slice(-2) + "-" + ("0" + date).slice(-2);
+
+  const user = new User({
+    ..._.omit(value, "password"),
+    userStatus: true,
+    password: hashedPassword,
+    status: "Pending",
+    statusBg: "#FEC90F",
+    onBoardingDate: dateNow,
+  });
+
+  try {
+    const newUser = await user.save();
+    const regestereduserMail = {
+      from: "appsdny@gmail.com",
+      to: req.body.email,
+      subject: "Welcome to Salt World",
+      text: `Hi ${req.body.FirstName},
     Congratulations on your successful registration at Salt World. User these Credentials to login to our system.
-          
+
     Your login id: ${req.body.email}
     Password: ${req.body.password}
-          
-    * Do Not Share this mail *
-          
-    Thank you 
-    Team Salt World`      
-          };
-          transporter.sendMail(regestereduserMail, function(error, info){
-            if (error) {
-              console.log(error);
-            } else {
-              console.log('Email sent: ' + info.response);
-            }
-          });
-        
-        res.status(201).json({"_id":newUser.id})
-        
-    }
-    catch(error){
-        res.status(400).json({message:error.message})
-    }
-})
 
+    * Do Not Share this mail *
+
+    Thank you
+    Team Salt World`,
+    };
+    transporter.sendMail(regestereduserMail, function (error, info) {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("Email sent: " + info.response);
+      }
+    });
+
+    res.status(201).json({ _id: newUser.id });
+  } catch (error) {
+    console.log({ error });
+    res.status(400).json({ message: error.message });
+  }
+});
 
 //get a user
-router.get('/:id' ,getUser, (req,res,)=>{
-
-    res.send(res.user)
-})
+router.get("/:id", getUser, (req, res) => {
+  res.send(res.user);
+});
 // get my data
-router.get("/mydata/me",verifyToken,async (req,res)=>{
-    console.log(req.tokendata._id)
-    const user=await User.User.findOne({_id:req.tokendata._id});
-    if(!user) return res.status(400).send({"message":"User dose not exist!"});
-    res.send(user)
-
-})
+router.get("/mydata/me", verifyToken, async (req, res) => {
+  console.log(req.tokendata._id);
+  const user = await User.User.findOne({ _id: req.tokendata._id });
+  if (!user) return res.status(400).send({ message: "User dose not exist!" });
+  res.send(user);
+});
 
 //get all user
-router.get('/',verifyToken,async (req,res)=>{
-    const user=await User.User.findOne({_id:req.tokendata._id});
-    if(!user) return res.status(400).send({"message":"User dose not exist!"});
-    if(!user.UserBranch) return res.status(400).send({"message":"No Employee branch found"});
-    console.log(user.UserBranch)
-    try{
-        const users=await User.find({UserBranch:user.UserBranch});
-        res.json(users)
-    }catch(error){
-        res.status(500).json({message: error.message})
-    }
-})
-router.get('/getall/get',async (req,res)=>{
-    try{
-        const users=await User.find();
-        res.json(users)
-    }catch(error){
-        res.status(500).json({message: error.message})
-    }
-})
+router.get("/", verifyToken, async (_, res) => {
+  const users = await User.find();
+  if (!users) {
+    return res.status(400).send({ message: "Users dose not exist!" });
+  }
+  try {
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
+// router.get("/all", verifyToken, async (_, res) => {
+//   try {
+//       const users = await User.find();
+//       console.log(users);
+//     res.json(users);
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// });
 
 //update user
-router.patch('/:id',verifyToken, getUser,async(req,res)=>{
-    console.log(req.tokendata.UserType);
-    if (req.tokendata.UserType!="Admin") return res.status(500).json({message:"Access Pohibited!"})
-    if(req.body.FirstName!=null){
-        res.user.FirstName=req.body.FirstName;
-    }
-    if(req.body.LastName!=null){
-        res.user.LastName=req.body.LastName;
-    }
-    if(req.body.email!=null){
-        res.user.email=req.body.email;
-    }
-    if(req.body.mobile!=null){
-        res.user.mobile=req.body.mobile;
-    }
-    if(req.body.UserStatus!=null){
-        res.user.UserStatus=req.body.UserStatus;
-    }
-    if(req.body.UserType!=null){
-        
-        res.user.UserType=req.body.UserType;
-    }
-    try{
-        const newUser=await res.user.save()
-        res.status(201).json({"_id":newUser.id})
-    }catch(error){
-        res.status(500).json({message: error.message})
-    }
-})
+router.patch("/:id", verifyToken, getUser, async (req, res) => {
+  if (req.tokendata.UserType !== "Admin") {
+    return res.status(500).json({ message: "Access Prohibited!" });
+  }
 
+  const { value, error } = registrationUpdateValidator(req.body);
+  if (error) {
+    return res.status(422).json({ message: error.message });
+  }
 
-router.delete("/:id",async (req,res)=>{
-    console.log(req.params.id)
-    user=await User.User.findById(req.params.id)
-        if(user==null){
-            return res.status(404).json({message:"User unavailable!"})
-        }
+  const salt = await genSalt(10);
+  const hashedPassword = await hash(value.password, salt);
 
+  try {
+    const updatedUser = await User.updateOne(
+      { _id: res.user._id },
+      {
+        ..._.omit(value, "password"),
+        password: hashedPassword,
+      }
+    );
+    res.status(201).json({ _id: updatedUser.id });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
-    try{
-        const reasult= await User.deleteOne({_id: new ObjectId(req.params.id)})
-        res.json(reasult)
-    }catch(error){
-        res.status(500).json({message: error.message})
-    }
-})
+router.delete("/:id", async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user) {
+    return res.status(404).json({ message: "User unavailable!" });
+  }
+
+  try {
+    const result = await User.deleteOne({ _id: new ObjectId(req.params.id) });
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+});
 
 //middleware
-async function getUser(req,res,next){
-    let user
-    try{
-        user=await User.User.findById(req.params.id)
-        if(user==null){
-            return res.status(404).json({message:"User unavailable!"})
-        }
-
-    }catch(error){
-        res.status(500).json({message: error.message})
+async function getUser(req, res, next) {
+  let user;
+  try {
+    user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User unavailable!" });
     }
-    res.user=user
-    next()
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+  res.user = user;
+  next();
 }
 
 export default router;

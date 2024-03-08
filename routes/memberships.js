@@ -11,6 +11,7 @@ router.post("/", verifyToken, async (req, res) => {
     return res.status(500).json({ message: "Access Prohibited!" });
   }
   req.body.active = true;
+  console.log({ id: req.body });
   const { value } = membershipCreateValidator(req.body);
 
   const membership = new Membership(value);
@@ -23,12 +24,12 @@ router.post("/", verifyToken, async (req, res) => {
 });
 
 //get a service
-router.get("/:id", getMemberships, (res) => {
+router.get("/:id", getMemberships, (_, res) => {
   res.send(res.membership);
 });
 
 //get all services
-router.get("/", async (res) => {
+router.get("/", async (_, res) => {
   try {
     const allMemberships = await Membership.find();
     res.json(allMemberships);

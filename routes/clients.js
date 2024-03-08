@@ -4,6 +4,8 @@ import { createTransport } from "nodemailer";
 import Client from "../models/clientModel.js";
 import { clientCreateValidator } from "../validators/clientCreateValidator.js";
 import { clientUpdateValidator } from "../validators/clientUpdateValidator.js";
+import Membership from "../models/membershipsModel.js";
+import Service from "../models/servicesModel.js";
 
 const router = Router();
 
@@ -79,10 +81,31 @@ router.patch("/:id", verifyToken, async (req, res) => {
 
 //get a clients
 router.get("/:id", async (req, res) => {
-  const client = await Client.findById(req.params.id);
+  let client = await Client.findById(req.params.id);
   if (!client) {
     return res.status(404).json({ message: "Client Data not found!" });
   }
+
+      const clientMembershipData = [];
+      for (const clientMembership of client.clientMemberships) {
+        let data = clientMembership.toObject();
+        let membership = await Membership.findById(
+          clientMembership.membershipId
+        );
+        const services = [];
+        for (const serviceId of membership.serviceIds) {
+          const service = await Service.findById(serviceId);
+          services.push(service.toObject());
+        }
+        membership = membership.toObject();
+        membership['services'] = services;
+
+        data = Object.assign({}, data, { membership });
+        clientMembershipData.push(data);
+      }
+  
+  client = client.toObject();
+  client.clientMemberships = clientMembershipData;
   return res.status(200).json(client);
 });
 
@@ -119,7 +142,7 @@ router.get("/search/:para", async (req, res) => {
 });
 
 //get all clients
-router.get("/", async (res) => {
+router.get("/", async (_, res) => {
   try {
     const clients = await Client.find().limit(10);
     res.json(clients);
