@@ -1,34 +1,58 @@
-const express = require("express")
-const router= express.Router()
-const clientNotesModel= require("../models/notesModel")
-const verifie_token= require("../validators/verifyToken")
+import { format } from "date-fns";
+import { Router } from "express";
+import verifyToken from "../validators/verifyToken.js";
+import { clientNotesCreateValidator } from "../validators/clientNotesCreateValidator.js";
+import Client from "../models/clientModel.js";
+import _ from "lodash";
+
+const router = Router();
 
 //add services
-router.post('/',verifie_token,async (req,res)=>{
-    if (req.tokendata.UserType!="Admin") return res.status(500).json({message:"Access Pohibited!"})
-    var time=new Date(req.body.date);
-    const notes= new clientNotesModel({
-        clientid:req.body.clientid,
-        author:req.tokendata._id,
-        note:req.body.note,
-        date:time,
-    })
-    try{
-        const newnotes=await notes.save()
-        res.status(201).json(newnotes._id)
-    }
-    catch(error){
-        res.status(400).json({message:error.message})
-    }
-})
+router.post("/:clientId", verifyToken, async (req, res) => {
+  if (req.tokendata.UserType !== "Admin") {
+    return res.status(500).json({ message: "Access Prohibited!" });
+  }
 
-router.get('/:clientid',verifie_token,async(req,res)=>{
-    if (req.tokendata.UserType!="Admin") return res.status(500).json({message:"Access Pohibited!"})
-    try{
-        const clientNotes=await clientNotesModel.find({clientid:req.params.clientid})
-        res.json(clientNotes)
-    }catch(error){
-        res.status(500).json({message: error.message})
-    }
-})
-module.exports=router
+  const client = await Client.findById(req.params.clientId);
+  if (!client) {
+    return res.status(404).json({ message: "Client not found" });
+  }
+
+  const now = new Date();
+  const { value } = clientNotesCreateValidator(req.body);
+
+  try {
+    client.notes.push({ ...value, date: now, author: req.tokendata._id });
+    await client.save();
+
+    res.status(200).json(client.notes);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+router.get("/:clientId", verifyToken, async (req, res) => {
+  if (req.tokendata.UserType !== "Admin") {
+    return res.status(500).json({ message: "Access Prohibited!" });
+  }
+
+  const client = await Client.findById(req.params.clientId);
+  if (!client) {
+    return res.status(404).json({ message: "Client not found" });
+  }
+
+  try {
+    let clientNotesData = client.notes.map((clientNote) => {
+      const data = clientNote.toObject();
+      data.date = format(clientNote.date, "dd MMM yyyy hh:mm:ss");
+      return data;
+    });
+    clientNotesData = _.orderBy(clientNotesData, 'date', 'desc');
+
+    res.json(clientNotesData);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+export default router;

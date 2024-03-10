@@ -1,54 +1,54 @@
-const mongoos=require("mongoose")
+import { Schema, model } from "mongoose";
 
-const membershipsSchema= new mongoos.Schema({
-    MembershipName:{
-        type:String,
-        required:true
-    },
-    MembershipDescription:{
-        type:String,
-        required:true
-    },
-    Services:{
-        type:Array,
-        required:true
-    },
-    MembershipCost:{
-        type:Number,
-        required:true
-    },
-    SellingCost:{
-        type:Number,
-        required:true
-    },
-    Taxrate:{
-        type:Number,
-        required:true
-    },
-    HsnCode:{
-        type:String,
-        required:true
-    },
-    active:{
-        type:Boolean,
-        required:true
-    },
-    Branch:{
-        type:String,
-        required:true
-    },
-    isunlimited:{
-        type:Boolean,
-        required:true
-    },
-    count:{
-        type:Number,
-        required:true
-    },
-    validity:{
-        type:Number,
-        required:true
-    },
-})
+const membershipsSchema = new Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  serviceIds: {
+    type: [String],
+    required: true,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  cost: {
+    type: Number,
+    required: true,
+  },
+  sellingCost: {
+    type: Number,
+    required: true,
+  },
+  taxRate: {
+    type: Number,
+    required: true,
+  },
+  hsnCode: {
+    type: String,
+    required: true,
+  },
+  active: {
+    type: Boolean,
+    required: true,
+  },
+  branch: {
+    type: String,
+    required: true,
+  },
+  isUnlimited: {
+    type: Boolean,
+    required: true,
+  },
+  count: {
+    type: Number,
+    required: true,
+  },
+  validity: {
+    type: Number,
+    required: true,
+  },
+});
 
-module.exports=mongoos.model('memberships',membershipsSchema)
+export default model("Membership", membershipsSchema);

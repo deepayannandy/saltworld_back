@@ -1,12 +1,12 @@
-const express = require("express")
-const router= express.Router()
-const branch=require("../models/branchOfficeModel")
-//create branch
-const verifie_token= require("../validators/verifyToken")
+import { Router } from "express";
+import Branch from "../models/branchOfficeModel.js";
+import verifyToken from "../validators/verifyToken.js";
 
-router.post('/',verifie_token,async (req,res)=>{
+const router = Router();
+
+router.post('/',verifyToken,async (req,res)=>{
     if (req.tokendata.UserType!="Admin") return res.status(500).json({message:"Access Pohibited!"})
-    const brachOffice= new branch({
+    const brachOffice= new Branch({
         BranchName:req.body.BranchName,
         BranchDetails:req.body.BranchDetails,
         BranchAddress:req.body.BranchAddress,
@@ -34,7 +34,7 @@ router.get('/:id', getBranch,(req,res)=>{
 //get all branch
 router.get('/',async (req,res)=>{
     try{
-        const branchOffices=await branch.find()
+        const branchOffices=await Branch.find()
         res.json(branchOffices)
     }catch(error){
         res.status(500).json({message: error.message})
@@ -45,7 +45,7 @@ router.get('/',async (req,res)=>{
 async function getBranch(req,res,next){
     let branch
     try{
-        branch=await branch.findById(req.params.id)
+        branch=await branch.Branch.findById(req.params.id)
         if(branch==null){
             return res.status(404).json({message:"Branch unavailable!"})
         }
@@ -56,4 +56,4 @@ async function getBranch(req,res,next){
     res.branch=branch
     next()
 }
-module.exports=router
+export default router;

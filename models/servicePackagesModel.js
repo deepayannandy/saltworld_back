@@ -1,6 +1,6 @@
-const mongoos=require("mongoose")
+import { Schema, model } from "mongoose"
 
-const servicePackagesSchema= new mongoos.Schema({
+const servicePackagesSchema= new Schema({
     PackageName:{
         type:String,
         required:true
@@ -39,4 +39,4 @@ const servicePackagesSchema= new mongoos.Schema({
     },
 })
 
-module.exports=mongoos.model('servicePackages',servicePackagesSchema)
+export default model('ServicePackages', servicePackagesSchema);

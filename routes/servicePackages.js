@@ -1,13 +1,14 @@
-const express = require("express")
-const router= express.Router()
-const servicePackages=require("../models/servicePackagesModel")
-const verifie_token= require("../validators/verifyToken")
-const mongodb=require("mongodb");
+import { Router } from "express";
+import ServicePackages from "../models/servicePackagesModel.js";
+import verifyToken from "../validators/verifyToken.js";
+import { ObjectId } from "mongodb";
+
+const router = Router();
 
 //add services
-router.post('/',verifie_token,async (req,res)=>{
+router.post('/',verifyToken,async (req,res)=>{
     if (req.tokendata.UserType!="Admin") return res.status(500).json({message:"Access Pohibited!"})
-    const servicePackage= new servicePackages({
+    const servicePackage= new ServicePackages({
         PackageName:req.body.PackageName,
         PackageDescription:req.body.PackageDescription,
         ServicesId: req.body.ServicesId,
@@ -69,7 +70,7 @@ router.patch('/:id', getServices,async (req,res)=>{
 //get all services
 router.get('/',async (req,res)=>{
     try{
-        const servicep=await servicePackages.find()
+        const servicep=await ServicePackages.find()
         res.json(servicep)
     }catch(error){
         res.status(500).json({message: error.message})
@@ -78,12 +79,12 @@ router.get('/',async (req,res)=>{
 
 router.delete("/:id",async (req,res)=>{
     console.log(req.params.id)
-    s=await servicePackages.findById(req.params.id)
+    s=await ServicePackages.findById(req.params.id)
         if(s==null){
             return res.status(404).json({message:"Package unavailable!"})
         }
     try{
-        const reasult= await servicePackages.deleteOne({_id: new mongodb.ObjectId(req.params.id)})
+        const reasult= await ServicePackages.deleteOne({_id: new ObjectId(req.params.id)})
         res.json(reasult)
     }catch(error){
         res.status(500).json({message: error.message})
@@ -95,7 +96,7 @@ router.delete("/:id",async (req,res)=>{
 async function getServices(req,res,next){
     let servicep
     try{
-        servicep=await servicePackages.findById(req.params.id)
+        servicep=await ServicePackages.findById(req.params.id)
         if(servicep==null){
             return res.status(404).json({message:"Branch unavailable!"})
         }
@@ -106,4 +107,4 @@ async function getServices(req,res,next){
     res.service=servicep
     next()
 }
-module.exports=router
+export default router;
