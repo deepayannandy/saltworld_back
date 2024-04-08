@@ -69,7 +69,14 @@ router.patch("/:id", verifyToken, async (req, res) => {
     return res.status(404).json({ message: "Client Data not found!" });
   }
 
-  const { value } = clientUpdateValidator(req.body);
+  const { value, error } = clientUpdateValidator(req.body);
+  if (error) {
+    return res.status(422).json({ message: error.message });
+  }
+
+  if (value.mobileNumber) {
+    value.mobileNumber = Number(value.mobileNumber);
+  }
 
   try {
     const updatedClient = await Client.updateOne({ _id: client.id }, value);
@@ -86,24 +93,22 @@ router.get("/:id", async (req, res) => {
     return res.status(404).json({ message: "Client Data not found!" });
   }
 
-      const clientMembershipData = [];
-      for (const clientMembership of client.clientMemberships) {
-        let data = clientMembership.toObject();
-        let membership = await Membership.findById(
-          clientMembership.membershipId
-        );
-        const services = [];
-        for (const serviceId of membership.serviceIds) {
-          const service = await Service.findById(serviceId);
-          services.push(service.toObject());
-        }
-        membership = membership.toObject();
-        membership['services'] = services;
+  const clientMembershipData = [];
+  for (const clientMembership of client.clientMemberships) {
+    let data = clientMembership.toObject();
+    let membership = await Membership.findById(clientMembership.membershipId);
+    const services = [];
+    for (const serviceId of membership.serviceIds) {
+      const service = await Service.findById(serviceId);
+      services.push(service.toObject());
+    }
+    membership = membership.toObject();
+    membership["services"] = services;
 
-        data = Object.assign({}, data, { membership });
-        clientMembershipData.push(data);
-      }
-  
+    data = Object.assign({}, data, { membership });
+    clientMembershipData.push(data);
+  }
+
   client = client.toObject();
   client.clientMemberships = clientMembershipData;
   return res.status(200).json(client);
@@ -113,7 +118,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
   if (req.tokendata.UserType !== "Admin") {
     return res.status(400).json({ message: "Access Prohibited!" });
   }
-  
+
   const client = await Client.findById(req.params.id);
   if (!client) {
     return res.status(404).json({ message: "Client Data not found!" });
