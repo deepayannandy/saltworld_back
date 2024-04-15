@@ -25,6 +25,8 @@ router.post("/", verifyToken, async (req, res) => {
     return res.status(500).json({ message: "Access Prohibited!" });
   }
 
+  req.body.emailNotification = true;
+  req.body.emailMarketingNotification = true;
   const { value } = clientCreateValidator(req.body);
   const client = new Client(value);
 

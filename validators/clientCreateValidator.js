@@ -4,8 +4,8 @@ export const clientCreateValidator = (data) => {
   const schema = joi
     .object()
     .keys({
-      firstName: joi.string().min(3).max(40).disallow(["_", "-", " "]),
-      lastName: joi.string().min(3).max(40).disallow(["_", "-", " "]),
+      firstName: joi.string().min(3).max(40).disallow("_", "-", " "),
+      lastName: joi.string().min(3).max(40).disallow("_", "-", " "),
       mobileNumber: joi.number().min(10).max(10),
       email: joi.string().email(),
       gender: joi.string(),

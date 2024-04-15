@@ -157,20 +157,19 @@ router.patch("/:id", verifyToken, getUser, async (req, res) => {
     return res.status(500).json({ message: "Access Prohibited!" });
   }
 
-  const { value, error } = registrationUpdateValidator(req.body);
-  if (error) {
-    return res.status(422).json({ message: error.message });
-  }
+  const { value } = registrationUpdateValidator(req.body);
 
-  const salt = await genSalt(10);
-  const hashedPassword = await hash(value.password, salt);
+  const userData = value;
+  if (value.password) {
+    const salt = await genSalt(10);
+    userData.password = await hash(value.password, salt);
+  }
 
   try {
     const updatedUser = await User.updateOne(
       { _id: res.user._id },
       {
-        ..._.omit(value, "password"),
-        password: hashedPassword,
+        ...value,
       }
     );
     res.status(201).json({ _id: updatedUser.id });
