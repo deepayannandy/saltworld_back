@@ -10,6 +10,7 @@ export const registrationUpdateValidator = (data) => {
     password: joi.string().min(6),
     firstName: joi.string().min(3),
     lastName: joi.string().min(1),
+    userStatus: joi.boolean(),
     userBranch: joi.string().min(2),
     userType: joi.string(),
   });

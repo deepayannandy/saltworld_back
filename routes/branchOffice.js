@@ -5,7 +5,7 @@ import verifyToken from "../validators/verifyToken.js";
 const router = Router();
 
 router.post('/',verifyToken,async (req,res)=>{
-    if (req.tokendata.UserType!="Admin") return res.status(500).json({message:"Access Pohibited!"})
+    if (req.tokendata.userType!="Admin") return res.status(500).json({message:"Access Pohibited!"})
     const brachOffice= new Branch({
         BranchName:req.body.BranchName,
         BranchDetails:req.body.BranchDetails,

@@ -21,7 +21,7 @@ const transporter = createTransport({
 
 //create clients
 router.post("/", verifyToken, async (req, res) => {
-  if (req.tokendata.UserType !== "Admin") {
+  if (req.tokendata.userType !== "Admin") {
     return res.status(500).json({ message: "Access Prohibited!" });
   }
 
@@ -60,7 +60,7 @@ router.post("/", verifyToken, async (req, res) => {
 });
 
 router.patch("/:id", verifyToken, async (req, res) => {
-  if (req.tokendata.UserType !== "Admin") {
+  if (req.tokendata.userType !== "Admin") {
     return res.status(500).json({ message: "Access Prohibited!" });
   }
 
@@ -115,7 +115,7 @@ router.get("/:id", async (req, res) => {
 });
 
 router.delete("/:id", verifyToken, async (req, res) => {
-  if (req.tokendata.UserType !== "Admin") {
+  if (req.tokendata.userType !== "Admin") {
     return res.status(400).json({ message: "Access Prohibited!" });
   }
 

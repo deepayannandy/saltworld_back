@@ -38,13 +38,13 @@ router.post("/login", async (req, res) => {
   // validate password
   const validPass = await compare(req.body.password, user.password);
   if (!validPass)
-    return res.status(400).send({ message: "Emailid or password is invalid!" });
-  if (!user.UserStatus)
+    return res.status(400).send({ message: "Email id or password is invalid!" });
+  if (!user.userStatus)
     return res.status(400).send({ message: "User is not an active user!" });
 
   //create and assign token
   const token = sign(
-    { _id: user._id, UserType: user.UserType },
+    { _id: user._id, userType: user.userType },
     process.env.SECREAT_TOKEN
   );
   res.header("auth-token", token).send(token);
@@ -153,7 +153,7 @@ router.get("/", verifyToken, async (_, res) => {
 
 //update user
 router.patch("/:id", verifyToken, getUser, async (req, res) => {
-  if (req.tokendata.UserType !== "Admin") {
+  if (req.tokendata.userType !== "Admin") {
     return res.status(500).json({ message: "Access Prohibited!" });
   }
 

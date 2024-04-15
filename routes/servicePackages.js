@@ -7,7 +7,7 @@ const router = Router();
 
 //add services
 router.post('/',verifyToken,async (req,res)=>{
-    if (req.tokendata.UserType!="Admin") return res.status(500).json({message:"Access Pohibited!"})
+    if (req.tokendata.userType!="Admin") return res.status(500).json({message:"Access Pohibited!"})
     const servicePackage= new ServicePackages({
         PackageName:req.body.PackageName,
         PackageDescription:req.body.PackageDescription,
