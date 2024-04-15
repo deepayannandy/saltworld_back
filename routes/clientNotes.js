@@ -9,7 +9,7 @@ const router = Router();
 
 //add services
 router.post("/:clientId", verifyToken, async (req, res) => {
-  if (req.tokendata.UserType !== "Admin") {
+  if (req.tokendata.userType !== "Admin") {
     return res.status(500).json({ message: "Access Prohibited!" });
   }
 
@@ -32,7 +32,7 @@ router.post("/:clientId", verifyToken, async (req, res) => {
 });
 
 router.get("/:clientId", verifyToken, async (req, res) => {
-  if (req.tokendata.UserType !== "Admin") {
+  if (req.tokendata.userType !== "Admin") {
     return res.status(500).json({ message: "Access Prohibited!" });
   }
 

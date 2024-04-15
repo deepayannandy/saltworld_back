@@ -24,7 +24,7 @@ const transporter = createTransport({
 process.env.TZ = "Asia/Calcutta";
 
 router.post("/:clientId", verifyToken, async (req, res) => {
-  if (req.tokendata.UserType !== "Admin") {
+  if (req.tokendata.userType !== "Admin") {
     return res.status(500).json({ message: "Access Prohibited!" });
   }
 
@@ -101,7 +101,7 @@ router.post("/:clientId", verifyToken, async (req, res) => {
 
 //get a appointment
 router.get("/:id", verifyToken, async (req, res) => {
-  if (req.tokendata.UserType !== "Admin") {
+  if (req.tokendata.userType !== "Admin") {
     return res.status(500).json({ message: "Access Prohibited!" });
   }
 
@@ -153,7 +153,7 @@ router.get("/:id", verifyToken, async (req, res) => {
 
 //get a appointments by Client Id
 router.get("/client/:clientId", verifyToken, async (req, res) => {
-  if (req.tokendata.UserType !== "Admin") {
+  if (req.tokendata.userType !== "Admin") {
     return res.status(500).json({ message: "Access Prohibited!" });
   }
 
@@ -190,7 +190,7 @@ router.get("/client/:clientId", verifyToken, async (req, res) => {
 
 //get all appointments
 router.get("/", verifyToken, async (req, res) => {
-  if (req.tokendata.UserType !== "Admin") {
+  if (req.tokendata.userType !== "Admin") {
     return res.status(500).json({ message: "Access Prohibited!" });
   }
 
@@ -219,7 +219,7 @@ router.get(
   "/existing/:time&:serviceId&:duration",
   verifyToken,
   async (req, res) => {
-    if (req.tokendata.UserType !== "Admin") {
+    if (req.tokendata.userType !== "Admin") {
       return res.status(400).json({ message: "Access Prohibited!" });
     }
     const startDateTime = new Date(req.params.time);
@@ -257,7 +257,7 @@ router.get(
   "/searchbydate/:starttime&:endtime&:branch",
   verifyToken,
   async (req, res) => {
-    if (req.tokendata.UserType !== "Admin") {
+    if (req.tokendata.userType !== "Admin") {
       return res.status(400).json({ message: "Access Prohibited!" });
     }
 
@@ -293,7 +293,7 @@ router.get(
 
 //reschedule
 router.patch("/:id", verifyToken, async (req, res) => {
-  if (req.tokendata.UserType !== "Admin") {
+  if (req.tokendata.userType !== "Admin") {
     return res.status(400).json({ message: "Access Prohibited!" });
   }
 
@@ -385,7 +385,7 @@ router.patch("/:id", verifyToken, async (req, res) => {
 
 //delete schedule
 router.delete("/:id", verifyToken, async (req, res) => {
-  if (req.tokendata.UserType !== "Admin") {
+  if (req.tokendata.userType !== "Admin") {
     return res.status(400).json({ message: "Access Prohibited!" });
   }
 

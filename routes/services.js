@@ -8,7 +8,7 @@ const router = Router();
 
 //add services
 router.post("/", verifyToken, async (req, res) => {
-  if (req.tokendata.UserType !== "Admin") {
+  if (req.tokendata.userType !== "Admin") {
     return res.status(400).json({ message: "Access Prohibited!" });
   }
 
@@ -38,7 +38,7 @@ router.get("/:id", verifyToken, getServices, (_, res) => {
 });
 
 router.patch("/:id", verifyToken, async (req, res) => {
-  if (req.tokendata.UserType !== "Admin") {
+  if (req.tokendata.userType !== "Admin") {
     return res.status(400).json({ message: "Access Prohibited!" });
   }
 
@@ -67,7 +67,7 @@ router.get("/", verifyToken, async (_, res) => {
 });
 
 router.delete("/:id", verifyToken, async (req, res) => {
-  if (req.tokendata.UserType !== "Admin") {
+  if (req.tokendata.userType !== "Admin") {
     return res.status(400).json({ message: "Access Prohibited!" });
   }
 
