@@ -28,75 +28,83 @@ router.post("/:clientId", verifyToken, async (req, res) => {
     return res.status(500).json({ message: "Access Prohibited!" });
   }
 
-  const { value, error } = clientAppointmentCreateValidator(req.body);
+  const { value, error } = clientAppointmentCreateValidator(req.body.appointmentData);
   if (error) {
     return res.status(422).json({ message: error.message });
   }
 
+    let client = await Client.findById(req.params.clientId);
+    if (!client) {
+      return res.status(404).json({ message: "Client Data not found!" });
+    }
+  
+  for (const data of value) {
+      const startDateTime = new Date(data.startDateTime);
+      const endDateTime = addMinutes(startDateTime, data.duration);
+      const membership = await Membership.findById(data.membershipId);
+      const service = await Service.findById(data.serviceId);
+      const resource = service.resourceType;
+      const rescheduleCount = 0;
+    
+    const formattedStartDateTime = startDateTime.toString();
+    const membershipName = membership ? ` (${membership.name})` : "";
+    const title = `${service.name}${membershipName} for ${client.firstName} ${client.lastName} at ${formattedStartDateTime}`;
 
-  const startDateTime = new Date(value.startDateTime);
-  const endDateTime = addMinutes(startDateTime, value.duration);
-  const membership = await Membership.findById(value.membershipId);
-  const service = await Service.findById(value.serviceId);
-  const resource = service.resourceType;
-  const rescheduleCount = 0;
+    client.appointments.push({
+      ...data,
+      title,
+      resource,
+      rescheduleCount,
+      endDateTime,
+    });
 
-  let client = await Client.findById(req.params.clientId);
-  if (!client) {
-    return res.status(404).json({ message: "Client Data not found!" });
+    try {
+      client = await client.save();
+
+      const latestClientAppointment = client.appointments.find(
+        (appointment) => appointment.title === title
+      );
+
+      const startDate = format(startDateTime, "dd-MMM-yyyy");
+      const mail = {
+        from: "appsdny@gmail.com",
+        to: client.email,
+        subject: `🤗  Hi  ${client.firstName}, your appointment is confirmed!`,
+        text: `Booking ref: ${latestClientAppointment._id}
+                ${startDate} with Salt World
+
+                Appointment details
+                ${latestClientAppointment.title}
+
+                Location
+                Salt World
+                Site #1, 2nd Floor, Sri Chakra building, 18th Main, HSR Layout Sec 3, Behind Saibaba temple, Bengaluru (HSR Layout), 560102, Karnataka, IN
+                GPS: http://tinyurl.com/saltworld
+
+                Cancellation / Reschedule policy
+                    1. Reschedule is allowed 48 hours prior to the scheduled session, however under circumstances like high fever, monthly period cycle or any other health complications reschedule is still permitted before 3 hours of the scheduled session.
+                    2. If the reschedule request is NOT received within the above-mentioned window, then it will be considered as session availed.
+                    3. In case of cancellation due to unavoidable situations, if we receive the cancellation request before 3 hours of the scheduled session, we will provide the credit note, that can be availed within a year.
+                    4. If the scheduled session is canceled, it cannot be provided back on the weekend / public holiday. It can be availed only on the weekdays.
+
+                Important info
+                Please be available at the location 30 minutes prior to your appointment. Please know that delays in reaching the location will impact the duration of the session.
+
+                For any assistance dial / WhatsApp: +91 7687878793`,
+      };
+      transporter.sendMail(mail, function (error, info) {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log("Email sent: " + info.response);
+        }
+      });
+    } catch (error) {
+      return res.status(400).json({ message: error.message });
+    }
   }
 
-  const formattedStartDateTime = startDateTime.toString();
-  const membershipName = membership ? ` (${membership.name})` : '';
-  const title = `${service.name}${membershipName} for ${client.firstName} ${client.lastName} at ${formattedStartDateTime}`;
-
-  try {
-    client.appointments.push({ ...value, title, resource, rescheduleCount, endDateTime });
-    client = await client.save();
-
-    const latestClientAppointment = client.appointments.find(
-      (appointment) => appointment.title === title
-    );
-
-    const startDate = format(startDateTime, "dd-MMM-yyyy");
-    // const mail = {
-    //   from: "appsdny@gmail.com",
-    //   to: client.email,
-    //   subject: `🤗  Hi  ${client.firstName}, your appointment is confirmed!`,
-    //   text: `Booking ref: ${latestClientAppointment._id}
-    //           ${startDate} with Salt World
-                          
-    //           Appointment details
-    //           ${latestClientAppointment.title}
-                          
-    //           Location
-    //           Salt World
-    //           Site #1, 2nd Floor, Sri Chakra building, 18th Main, HSR Layout Sec 3, Behind Saibaba temple, Bengaluru (HSR Layout), 560102, Karnataka, IN
-    //           GPS: http://tinyurl.com/saltworld
-                          
-    //           Cancellation / Reschedule policy
-    //               1. Reschedule is allowed 48 hours prior to the scheduled session, however under circumstances like high fever, monthly period cycle or any other health complications reschedule is still permitted before 3 hours of the scheduled session.
-    //               2. If the reschedule request is NOT received within the above-mentioned window, then it will be considered as session availed.
-    //               3. In case of cancellation due to unavoidable situations, if we receive the cancellation request before 3 hours of the scheduled session, we will provide the credit note, that can be availed within a year.
-    //               4. If the scheduled session is canceled, it cannot be provided back on the weekend / public holiday. It can be availed only on the weekdays.
-                          
-    //           Important info
-    //           Please be available at the location 30 minutes prior to your appointment. Please know that delays in reaching the location will impact the duration of the session.
-                          
-    //           For any assistance dial / WhatsApp: +91 7687878793`,
-    // };
-    // transporter.sendMail(mail, function (error, info) {
-    //   if (error) {
-    //     console.log(error);
-    //   } else {
-    //     console.log("Email sent: " + info.response);
-    //   }
-    // });
-
-    res.status(201).json(latestClientAppointment._id);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
+  return res.status(201).json({message: 'Appointments added successfully'});
 });
 
 //get a appointment
@@ -344,39 +352,39 @@ router.patch("/:id", verifyToken, async (req, res) => {
   try {
     await client.save();
 
-    // const mail = {
-    //   from: "appsdny@gmail.com",
-    //   to: client.email,
-    //   subject: `⌛ Hi ${client.firstName}, your appointment has been rescheduled!`,
-    //   text: `Booking ref: ${appointment._id}
-    //           Your appointment with Salt World is now booked for ${startDateTime}
+    const mail = {
+      from: "appsdny@gmail.com",
+      to: client.email,
+      subject: `⌛ Hi ${client.firstName}, your appointment has been rescheduled!`,
+      text: `Booking ref: ${appointment._id}
+              Your appointment with Salt World is now booked for ${startDateTime}
                           
-    //           Appointment details
-    //           ${appointment.title}
+              Appointment details
+              ${appointment.title}
                           
-    //           Location
-    //           Salt World
-    //           Site #1, 2nd Floor, Sri Chakra building, 18th Main, HSR Layout Sec 3, Behind Saibaba temple, Bengaluru (HSR Layout), 560102, Karnataka, IN
-    //           GPS: http://tinyurl.com/saltworld
+              Location
+              Salt World
+              Site #1, 2nd Floor, Sri Chakra building, 18th Main, HSR Layout Sec 3, Behind Saibaba temple, Bengaluru (HSR Layout), 560102, Karnataka, IN
+              GPS: http://tinyurl.com/saltworld
                           
-    //           Cancellation / Reschedule policy
-    //           1. Reschedule is allowed 48 hours prior to the scheduled session, however under circumstances like high fever, monthly period cycle or any other health complications reschedule is still permitted before 3 hours of the scheduled session.
-    //           2. If the reschedule request is NOT received within the above-mentioned window, then it will be considered as session availed.
-    //           3. In case of cancellation due to unavoidable situations, if we receive the cancellation request before 3 hours of the scheduled session, we will provide the credit note, that can be availed within a year.
-    //           4. If the scheduled session is canceled, it cannot be provided back on the weekend / public holiday. It can be availed only on the weekdays.
+              Cancellation / Reschedule policy
+              1. Reschedule is allowed 48 hours prior to the scheduled session, however under circumstances like high fever, monthly period cycle or any other health complications reschedule is still permitted before 3 hours of the scheduled session.
+              2. If the reschedule request is NOT received within the above-mentioned window, then it will be considered as session availed.
+              3. In case of cancellation due to unavoidable situations, if we receive the cancellation request before 3 hours of the scheduled session, we will provide the credit note, that can be availed within a year.
+              4. If the scheduled session is canceled, it cannot be provided back on the weekend / public holiday. It can be availed only on the weekdays.
 
-    //           Important info
-    //           Please be available at the location 30 minutes prior to your appointment. Please know that delays in reaching the location will impact the duration of the session.
+              Important info
+              Please be available at the location 30 minutes prior to your appointment. Please know that delays in reaching the location will impact the duration of the session.
 
-    //           For any assistance dial / WhatsApp: +91 7687878793`,
-    // };
-    // transporter.sendMail(mail, function (error, info) {
-    //   if (error) {
-    //     console.log(error);
-    //   } else {
-    //     console.log("Email sent: " + info.response);
-    //   }
-    // });
+              For any assistance dial / WhatsApp: +91 7687878793`,
+    };
+    transporter.sendMail(mail, function (error, info) {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("Email sent: " + info.response);
+      }
+    });
     res.status(201).json(appointment._id);
   } catch (error) {
     res.status(500).json({ message: error.message });
