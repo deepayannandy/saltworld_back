@@ -28,24 +28,46 @@ router.post("/:clientId", verifyToken, async (req, res) => {
     return res.status(500).json({ message: "Access Prohibited!" });
   }
 
-  const { value, error } = clientAppointmentCreateValidator(req.body.appointmentData);
+  const { value, error } = clientAppointmentCreateValidator(
+    req.body.appointmentData
+  );
   if (error) {
     return res.status(422).json({ message: error.message });
   }
 
-    let client = await Client.findById(req.params.clientId);
-    if (!client) {
-      return res.status(404).json({ message: "Client Data not found!" });
-    }
-  
+  let client = await Client.findById(req.params.clientId);
+  if (!client) {
+    return res.status(404).json({ message: "Client Data not found!" });
+  }
+
   for (const data of value) {
-      const startDateTime = new Date(data.startDateTime);
-      const endDateTime = addMinutes(startDateTime, data.duration);
-      const membership = await Membership.findById(data.membershipId);
-      const service = await Service.findById(data.serviceId);
-      const resource = service.resourceType;
-      const rescheduleCount = 0;
-    
+    const startDateTime = new Date(data.startDateTime);
+    const endDateTime = addMinutes(startDateTime, data.duration);
+    const membership = await Membership.findById(data.membershipId);
+    const service = await Service.findById(data.serviceId);
+    const resource = service.resourceType;
+    const rescheduleCount = 0;
+
+    const clients = await Client.find();
+    for (const client of clients) {
+      for (const appointment of client.appointments) {
+        if (
+          startDateTime >= appointment.startDateTime &&
+          startDateTime <= appointment.endDateTime
+        ) {
+          return res.status(422).json({
+            message: `This slot between ${format(
+              appointment.startDateTime,
+              "dd-MMM-yy hh:mm a"
+            )} and ${format(
+              appointment.endDateTime,
+              "dd-MMM-yy hh:mm a"
+            )} is already booked. Please try another slot.`,
+          });
+        }
+      }
+    }
+
     const formattedStartDateTime = startDateTime.toString();
     const membershipName = membership ? ` (${membership.name})` : "";
     const title = `${service.name}${membershipName} for ${client.firstName} ${client.lastName} at ${formattedStartDateTime}`;
@@ -104,7 +126,7 @@ router.post("/:clientId", verifyToken, async (req, res) => {
     }
   }
 
-  return res.status(201).json({message: 'Appointments added successfully'});
+  return res.status(201).json({ message: "Appointments added successfully" });
 });
 
 //get a appointment
@@ -143,7 +165,9 @@ router.get("/:id", verifyToken, async (req, res) => {
   }
   const service = await Service.findById(appointment.serviceId);
 
-  const membershipData = membership ? { membership: membership.toObject() } : {};
+  const membershipData = membership
+    ? { membership: membership.toObject() }
+    : {};
   appointment = Object.assign({}, appointment.toObject(), {
     client: _.omit(client.toObject(), [
       "clientMemberships",
@@ -331,6 +355,29 @@ router.patch("/:id", verifyToken, async (req, res) => {
   const startDateTime = new Date(value.startDateTime);
   const endDateTime = addMinutes(startDateTime, service.duration);
 
+  const clients = await Client.find();
+  for (const client of clients) {
+    for (const appointmentData of client.appointments) {
+      console.log({ appointmentData });
+      console.log({ appointment });
+      if (
+        startDateTime >= appointmentData.startDateTime &&
+        startDateTime <= appointmentData.endDateTime &&
+        String(appointmentData._id) !== String(appointment._id)
+      ) {
+        return res.status(422).json({
+          message: `This slot between ${format(
+            appointmentData.startDateTime,
+            "dd-MMM-yy hh:mm a"
+          )} and ${format(
+            appointmentData.endDateTime,
+            "dd-MMM-yy hh:mm a"
+          )} is already booked. Please try another slot.`,
+        });
+      }
+    }
+  }
+
   const formattedStartDateTime = startDateTime.toString();
   const membershipName = membership ? ` (${membership.name})` : "";
   const title = `${service.name}${membershipName} for ${client.firstName} ${client.lastName} at ${formattedStartDateTime}`;
@@ -338,7 +385,7 @@ router.patch("/:id", verifyToken, async (req, res) => {
   client.appointments = client.appointments.map((appointment) => {
     if (appointment._id.toString() === req.params.id) {
       appointment = Object.assign({}, appointment, {
-        ..._.omit(value, 'clientId'),
+        ..._.omit(value, "clientId"),
         endDateTime,
         resource,
         rescheduleCount,
