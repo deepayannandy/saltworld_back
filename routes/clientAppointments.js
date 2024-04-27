@@ -40,15 +40,10 @@ router.post("/:clientId", verifyToken, async (req, res) => {
     return res.status(404).json({ message: "Client Data not found!" });
   }
 
+  const clients = await Client.find();
   for (const data of value) {
     const startDateTime = new Date(data.startDateTime);
-    const endDateTime = addMinutes(startDateTime, data.duration);
-    const membership = await Membership.findById(data.membershipId);
-    const service = await Service.findById(data.serviceId);
-    const resource = service.resourceType;
-    const rescheduleCount = 0;
 
-    const clients = await Client.find();
     for (const client of clients) {
       for (const appointment of client.appointments) {
         if (
@@ -67,6 +62,15 @@ router.post("/:clientId", verifyToken, async (req, res) => {
         }
       }
     }
+  }
+  
+  for (const data of value) {
+    const startDateTime = new Date(data.startDateTime);
+    const endDateTime = addMinutes(startDateTime, data.duration);
+    const membership = await Membership.findById(data.membershipId);
+    const service = await Service.findById(data.serviceId);
+    const resource = service.resourceType;
+    const rescheduleCount = 0;
 
     const formattedStartDateTime = startDateTime.toString();
     const membershipName = membership ? ` (${membership.name})` : "";
@@ -358,8 +362,6 @@ router.patch("/:id", verifyToken, async (req, res) => {
   const clients = await Client.find();
   for (const client of clients) {
     for (const appointmentData of client.appointments) {
-      console.log({ appointmentData });
-      console.log({ appointment });
       if (
         startDateTime >= appointmentData.startDateTime &&
         startDateTime <= appointmentData.endDateTime &&
