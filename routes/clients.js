@@ -73,6 +73,7 @@ router.patch("/:id", verifyToken, async (req, res) => {
 
   const { value, error } = clientUpdateValidator(req.body);
   if (error) {
+    console.log(error)
     return res.status(422).json({ message: error.message });
   }
 
