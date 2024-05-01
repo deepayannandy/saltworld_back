@@ -6,8 +6,10 @@ export const clientCreateValidator = (data) => {
     .keys({
       firstName: joi.string().min(3).max(40).disallow(["_", "-", " "]),
       lastName: joi.string().min(3).max(40).disallow(["_", "-", " "]),
-      mobileNumber: joi.number().min(10).max(10),
+      mobileNumber: joi.number().min(10).max(13),
+      alternate_mobileNumber: joi.number().min(0).max(13),
       email: joi.string().email(),
+      alternate_email: joi.string(),
       gender: joi.string(),
       birthDate: joi.date(),
       anniversary: joi.string(),

@@ -36,23 +36,23 @@ router.post("/", verifyToken, async (req, res) => {
       to: value.email,
       subject: `👋 Welcome to Salt World Family ${value.firstName}`,
       text: `Hi ${value.firstName},
-                    Welcome to SaltWorld Family. Thank you for choosing us! 
+Welcome to SaltWorld Family. Thank you for choosing us! 
 
-                    Know More about our services visit: https://saltworld.in/
-                    Contact Details:  +91 76878 78793
-                    Visit us at: https://g.co/kgs/DwpfsY
+Know More about our services visit: https://saltworld.in/
+Contact Details:  +91 76878 78793
+Visit us at: https://g.co/kgs/DwpfsY
 
-                    Thank you 
-                    Team Salt World`,
+Thank you 
+Team Salt World`,
     };
 
-    transporter.sendMail(mail, (error, info) => {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log("Email sent: " + info.response);
-      }
-    });
+    // transporter.sendMail(mail, (error, info) => {
+    //   if (error) {
+    //     console.log(error);
+    //   } else {
+    //     console.log("Email sent: " + info.response);
+    //   }
+    // });
     res.status(201).json(newClientData._id);
   } catch (error) {
     res.status(400).json({ message: error.message });
