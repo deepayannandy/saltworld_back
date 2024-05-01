@@ -13,9 +13,17 @@ const clientSchema = new Schema({
     type: String,
     required: true,
   },
+  alternate_mobileNumber: {
+    type: String,
+    required: false,
+  },
   email: {
     type: String,
     required: true,
+  },
+  alternate_email: {
+    type: String,
+    required: false,
   },
   gender: {
     type: String,
