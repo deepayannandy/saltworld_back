@@ -15,7 +15,7 @@ router.post("/", verifyToken, async (req, res) => {
   req.body.active = true;
   if (req.body.sellingCost && req.body.taxRate) {
     req.body.includeTax =
-      req.body.sellingCost * ((100 + req.body.taxRate) / 100);
+      req.body.sellingCost * ((req.body.sellingCost * req.body.taxRate) / 100);
   }
   const { value } = serviceCreateValidator(req.body);
   const existingService = await Service.findOne({ name: value.name });
