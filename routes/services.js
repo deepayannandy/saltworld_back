@@ -13,11 +13,12 @@ router.post("/", verifyToken, async (req, res) => {
   }
 
   req.body.active = true;
-  if (req.body.sellingCost && req.body.taxRate) {
-    req.body.includeTax =
-      req.body.sellingCost * ((req.body.sellingCost * req.body.taxRate) / 100);
-  }
   const { value } = serviceCreateValidator(req.body);
+  if (value.sellingCost && value.taxRate) {
+    value.includeTax =
+      value.sellingCost + (value.sellingCost * value.taxRate) / 100;
+  }
+  
   const existingService = await Service.findOne({ name: value.name });
   if (existingService) {
     return res.status(400).json({ message: "Service name already exists!" });
@@ -48,6 +49,11 @@ router.patch("/:id", verifyToken, async (req, res) => {
   }
 
   const { value } = serviceUpdateValidator(req.body);
+  if (value.sellingCost && value.taxRate) {
+    value.includeTax =
+      value.sellingCost + (value.sellingCost * value.taxRate) / 100;
+  }
+
   try {
     const updatedService = await Service.updateOne({ _id: service.id }, value);
     res.status(201).json(updatedService._id);

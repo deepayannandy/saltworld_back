@@ -11,7 +11,6 @@ router.post("/", verifyToken, async (req, res) => {
     return res.status(500).json({ message: "Access Prohibited!" });
   }
   req.body.active = true;
-  console.log({ id: req.body });
   const { value } = membershipCreateValidator(req.body);
 
   const membership = new Membership(value);
@@ -33,6 +32,24 @@ router.get("/", async (_, res) => {
   try {
     const allMemberships = await Membership.find();
     res.json(allMemberships);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.delete("/:id", verifyToken, async (req, res) => {
+  if (req.tokendata.userType !== "Admin") {
+    return res.status(400).json({ message: "Access Prohibited!" });
+  }
+
+  const client = await Membership.findById(req.params.id);
+  if (!client) {
+    return res.status(404).json({ message: "Membership Data not found!" });
+  }
+
+  try {
+    const deletedMembership = await Membership.deleteOne({ _id: client.id });
+    res.json(deletedMembership);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
