@@ -13,7 +13,7 @@ export const serviceCreateValidator = (data) => {
       taxRate: joi.number(),
       hsnCode: joi.string(),
       resourceType: joi.string(),
-      includeTax: joi.number(),
+      includeTax: joi.number().optional(),
       active: joi.boolean(),
       branch: joi.string(),
     })
