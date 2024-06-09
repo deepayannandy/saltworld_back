@@ -38,7 +38,9 @@ router.post("/login", async (req, res) => {
   // validate password
   const validPass = await compare(req.body.password, user.password);
   if (!validPass)
-    return res.status(400).send({ message: "Email id or password is invalid!" });
+    return res
+      .status(400)
+      .send({ message: "Email id or password is invalid!" });
   if (!user.userStatus)
     return res.status(400).send({ message: "User is not an active user!" });
 
@@ -90,8 +92,8 @@ router.post("/register", async (req, res) => {
       from: "appsdny@gmail.com",
       to: req.body.email,
       subject: "Welcome to Salt World",
-      text: `Hi ${req.body.FirstName},
-    Congratulations on your successful registration at Salt World. User these Credentials to login to our system.
+      text: `Hi ${req.body.firstName},
+    Congratulations on your successful registration at Salt World. Use below credentials to login to our system.
 
     Your login id: ${req.body.email}
     Password: ${req.body.password}

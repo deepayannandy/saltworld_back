@@ -1,6 +1,7 @@
 import { Router } from "express";
 import Membership from "../models/membershipsModel.js";
 import { membershipCreateValidator } from "../validators/membershipCreateValidator.js";
+import { membershipUpdateValidator } from "../validators/membershipUpdateValidator.js";
 import verifyToken from "../validators/verifyToken.js";
 
 const router = Router();
@@ -42,14 +43,34 @@ router.delete("/:id", verifyToken, async (req, res) => {
     return res.status(400).json({ message: "Access Prohibited!" });
   }
 
-  const client = await Membership.findById(req.params.id);
-  if (!client) {
+  const membership = await Membership.findById(req.params.id);
+  if (!membership) {
     return res.status(404).json({ message: "Membership Data not found!" });
   }
 
   try {
     const deletedMembership = await Membership.deleteOne({ _id: client.id });
     res.json(deletedMembership);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.patch("/:id", verifyToken, async (req, res) => {
+  if (req.tokendata.userType !== "Admin") {
+    return res.status(400).json({ message: "Access Prohibited!" });
+  }
+
+  const membership = await Membership.findById(req.params.id);
+  if (!membership) {
+    return res.status(404).json({ message: "Membership Data not found!" });
+  }
+
+  const { value } = membershipUpdateValidator(req.body);
+
+  try {
+    const updatedMembership = await Membership.updateOne({ _id: membership.id }, value);
+    res.status(201).json({ _id: updatedMembership.id });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
