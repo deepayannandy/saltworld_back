@@ -456,7 +456,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
   }
 
   const appointment = client.appointments.find(
-    (appointment) => appointment._id === req.params.id
+    (appointment) => appointment._id.toString() === req.params.id
   );
   if (!appointment) {
     return res.status(404).json({ message: "Client appointment not found" });
