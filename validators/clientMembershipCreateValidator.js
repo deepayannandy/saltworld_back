@@ -4,13 +4,12 @@ export const clientMembershipCreateValidator = (data) => {
   const schema = joi
     .object()
     .keys({
-      membershipId: joi.string(),
-      paidAmount: joi.number(),
-      active: joi.boolean(),
-      countLeft: joi.number(),
-      startDate: joi.date(),
+      membershipId: joi.string().required(),
+      paidAmount: joi.number().required(),
+      active: joi.boolean().required(),
+      countLeft: joi.number().required(),
+      startDate: joi.date().required(),
+      endDate: joi.date().required(),
     })
-    .options({ presence: "required" })
-    .required();
   return schema.validate(data);
 };

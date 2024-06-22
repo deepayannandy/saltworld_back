@@ -94,7 +94,7 @@ async function getMemberships(req, res, next) {
       services.push({ ...service?.toObject(), count: serviceId.count });
     }
 
-    membership = Object.assign({}, membership.toObject(), {
+    membership = Object.assign({}, membership?.toObject(), {
       services
     })
   } catch (error) {

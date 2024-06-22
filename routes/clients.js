@@ -98,21 +98,21 @@ router.get("/:id", async (req, res) => {
 
   const clientMembershipData = [];
   for (const clientMembership of client.clientMemberships) {
-    let data = clientMembership.toObject();
+    let data = clientMembership?.toObject();
     let membership = await Membership.findById(clientMembership.membershipId);
     const services = [];
     for (const serviceId of membership.serviceIds) {
       const service = await Service.findById(serviceId);
-      services.push(service.toObject());
+      services.push(service?.toObject());
     }
-    membership = membership.toObject();
+    membership = membership?.toObject();
     membership["services"] = services;
 
     data = Object.assign({}, data, { membership });
     clientMembershipData.push(data);
   }
 
-  client = client.toObject();
+  client = client?.toObject();
   client.clientMemberships = clientMembershipData;
   return res.status(200).json(client);
 });
