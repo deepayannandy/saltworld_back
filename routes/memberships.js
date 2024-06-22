@@ -3,6 +3,7 @@ import Membership from "../models/membershipsModel.js";
 import { membershipCreateValidator } from "../validators/membershipCreateValidator.js";
 import { membershipUpdateValidator } from "../validators/membershipUpdateValidator.js";
 import verifyToken from "../validators/verifyToken.js";
+import Services from "../models/servicesModel.js";
 
 const router = Router();
 
@@ -49,7 +50,9 @@ router.delete("/:id", verifyToken, async (req, res) => {
   }
 
   try {
-    const deletedMembership = await Membership.deleteOne({ _id: client.id });
+    const deletedMembership = await Membership.deleteOne({
+      _id: membership.id,
+    });
     res.json(deletedMembership);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -84,6 +87,16 @@ async function getMemberships(req, res, next) {
     if (!membership) {
       return res.status(404).json({ message: "Membership not found!" });
     }
+
+    const services = [];
+    for (const serviceId of membership.serviceIds) {
+      const service = await Services.findById(serviceId.id);
+      services.push({ ...service?.toObject(), count: serviceId.count });
+    }
+
+    membership = Object.assign({}, membership.toObject(), {
+      services
+    })
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
