@@ -5,10 +5,18 @@ const membershipsSchema = new Schema({
     type: String,
     required: true,
   },
-  serviceIds: {
-    type: [String],
-    required: true,
-  },
+  serviceIds: [
+    {
+      id: {
+        type: String,
+        required: true,
+      },
+      count: {
+        type: Number,
+        required: true,
+      },
+    }
+  ],
   description: {
     type: String,
     required: true,
@@ -47,7 +55,7 @@ const membershipsSchema = new Schema({
   },
   validity: {
     type: Number,
-    required: true,
+    required: false,
   },
 });
 

@@ -50,7 +50,9 @@ router.delete("/:id", verifyToken, async (req, res) => {
   }
 
   try {
-    const deletedMembership = await Membership.deleteOne({ _id: client.id });
+    const deletedMembership = await Membership.deleteOne({
+      _id: membership.id,
+    });
     res.json(deletedMembership);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -88,8 +90,8 @@ async function getMemberships(req, res, next) {
 
     const services = [];
     for (const serviceId of membership.serviceIds) {
-      const service = await Services.findById(serviceId);
-      services.push(service?.toObject());
+      const service = await Services.findById(serviceId.id);
+      services.push({ ...service?.toObject(), count: serviceId.count });
     }
 
     membership = Object.assign({}, membership.toObject(), {
