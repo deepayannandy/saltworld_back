@@ -145,7 +145,7 @@ router.get("/:id", verifyToken, async (req, res) => {
   }
 
   let appointment = client.appointments.find((appointment) => {
-    const appointmentData = appointment.toObject();
+    const appointmentData = appointment?.toObject();
 
     return appointmentData._id.toString() === req.params.id;
   });
@@ -159,27 +159,27 @@ router.get("/:id", verifyToken, async (req, res) => {
   if (membership) {
     for (const serviceId of membership.serviceIds) {
       const service = await Service.findById(serviceId);
-      services.push(service.toObject());
+      services.push(service?.toObject());
     }
   } else {
     const servicesData = await Service.find();
     for (const service of servicesData) {
-      services.push(service.toObject());
+      services.push(service?.toObject());
     }
   }
   const service = await Service.findById(appointment.serviceId);
 
   const membershipData = membership
-    ? { membership: membership.toObject() }
+    ? { membership: membership?.toObject() }
     : {};
-  appointment = Object.assign({}, appointment.toObject(), {
-    client: _.omit(client.toObject(), [
+  appointment = Object.assign({}, appointment?.toObject(), {
+    client: _.omit(client?.toObject(), [
       "clientMemberships",
       "appointments",
       "notes",
     ]),
     ...membershipData,
-    service: service.toObject(),
+    service: service?.toObject(),
     services,
   });
   appointment.clientId = client.id;
@@ -210,7 +210,7 @@ router.get("/client/:clientId", verifyToken, async (req, res) => {
           ? "Completed"
           : "Live";
 
-      return Object.assign({}, appointment.toObject(), {
+      return Object.assign({}, appointment?.toObject(), {
         clientId: client.id,
         date,
         startTime,
@@ -236,7 +236,7 @@ router.get("/", verifyToken, async (req, res) => {
     let allAppointments = [];
     for (const client of clients) {
       const appointments = client.appointments.map((appointment) => {
-        appointment = appointment.toObject();
+        appointment = appointment?.toObject();
         appointment["clientId"] = client.id;
         return appointment;
       });

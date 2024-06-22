@@ -43,7 +43,7 @@ router.get("/:clientId", verifyToken, async (req, res) => {
 
   try {
     let clientNotesData = client.notes.map((clientNote) => {
-      const data = clientNote.toObject();
+      const data = clientNote?.toObject();
       data.date = format(clientNote.date, "dd MMM yyyy hh:mm:ss");
       return data;
     });

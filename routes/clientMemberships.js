@@ -12,20 +12,20 @@ router.post("/:clientId", verifyToken, async (req, res) => {
   if (req.tokendata.userType !== "Admin") {
     return res.status(500).json({ message: "Access Prohibited!" });
   }
+
+  req.body.active = true;
   const { value } = clientMembershipCreateValidator(req.body);
 
   const startDate = new Date(req.body.startDate);
-  const endDate = new Date(
-    startDate + req.body.validDuration * 24 * 60 * 60 * 1000
-  );
+  const endDate = new Date(req.body.endDate);
 
   let client = await Client.findById(req.params.clientId);
   if (!client) {
     return res.status(404).json({ message: "Client Data not found!" });
   }
-
+  
   try {
-    client.clientMemberships.push({ ...value, endDate });
+    client.clientMemberships.push({ ...value, startDate, endDate });
     client = await client.save();
     const latestClientMembership = client.clientMemberships.find(
       (clientMembership) => clientMembership.membershipId === value.membershipId
@@ -50,14 +50,14 @@ router.get("/:clientId", verifyToken, async (req, res) => {
   try {
     const clientMembershipData = [];
     for (const clientMembership of client.clientMemberships) {
-      let data = clientMembership.toObject();
+      let data = clientMembership?.toObject();
       const membership = await Membership.findById(
         clientMembership.membershipId
       );
-      data = Object.assign({}, data, membership.toObject());
+      data = Object.assign({}, data, membership?.toObject());
       for (const serviceId of membership.serviceIds) {
         const service = await Services.findById(serviceId);
-        data = Object.assign({}, data, service.toObject());
+        data = Object.assign({}, data, service?.toObject());
         clientMembershipData.push(data);
       }
     }
