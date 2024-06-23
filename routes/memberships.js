@@ -90,7 +90,7 @@ async function getMemberships(req, res, next) {
 
     const services = [];
     for (const serviceId of membership.serviceIds) {
-      const service = await Services.findById(serviceId.id);
+      const service = await Services.findById(serviceId);
       services.push({ ...service?.toObject(), count: serviceId.count });
     }
 
