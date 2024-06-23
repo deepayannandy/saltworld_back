@@ -4,6 +4,7 @@ import Membership from "../models/membershipsModel.js";
 import Services from "../models/servicesModel.js";
 import { clientMembershipCreateValidator } from "../validators/clientMembershipCreateValidator.js";
 import Client from "../models/clientModel.js";
+import _ from 'lodash';
 
 const router = Router();
 
@@ -57,7 +58,8 @@ router.get("/:clientId", verifyToken, async (req, res) => {
       data = Object.assign({}, data, membership?.toObject());
       for (const serviceId of membership.serviceIds) {
         const service = await Services.findById(serviceId);
-        data = Object.assign({}, data, service?.toObject());
+        const serviceName = service?.name;
+        data = Object.assign({}, data, {..._.omit(service?.toObject(), 'name'), serviceName});
         clientMembershipData.push(data);
       }
     }
