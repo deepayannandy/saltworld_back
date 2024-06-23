@@ -13,7 +13,7 @@ export const membershipCreateValidator = (data) => {
     branch: joi.string().required(),
     isUnlimited: joi.boolean().required(),
     count: joi.number().required(),
-    validity: joi.number().optional(),
+    validity: joi.number().required(),
   });
   return schema.validate(data);
 };
