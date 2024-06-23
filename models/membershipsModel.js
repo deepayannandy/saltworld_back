@@ -55,7 +55,7 @@ const membershipsSchema = new Schema({
   },
   validity: {
     type: Number,
-    required: false,
+    required: true,
   },
 });
 
