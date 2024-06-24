@@ -65,7 +65,7 @@ router.patch("/:id", verifyToken, async (req, res) => {
 //get all services
 router.get("/", verifyToken, async (_, res) => {
   try {
-    const services = await Service.find();
+    const services = await Service.find({active: true});
     res.json(services);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -83,7 +83,10 @@ router.delete("/:id", verifyToken, async (req, res) => {
   }
 
   try {
-    const deletedService = await Service.deleteOne({ _id: service.id });
+    const deletedService = await Service.updateOne(
+      { _id: service.id },
+      { active: false }
+    );
     res.json(deletedService);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -94,7 +97,8 @@ router.delete("/:id", verifyToken, async (req, res) => {
 async function getServices(req, res, next) {
   let service;
   try {
-    service = await Service.findById(req.params.id);
+    service = await Service.findOne
+    ({ _id: req.params.id, active: true });
     if (!service) {
       return res.status(404).json({ message: "Service not found!" });
     }
