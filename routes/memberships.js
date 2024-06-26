@@ -32,7 +32,7 @@ router.get("/:id", getMemberships, (_, res) => {
 //get all services
 router.get("/", async (_, res) => {
   try {
-    const allMemberships = await Membership.find();
+    const allMemberships = await Membership.find({active: true});
     res.json(allMemberships);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -50,9 +50,10 @@ router.delete("/:id", verifyToken, async (req, res) => {
   }
 
   try {
-    const deletedMembership = await Membership.deleteOne({
-      _id: membership.id,
-    });
+    const deletedMembership = await Membership.updateOne(
+      { _id: membership.id },
+      {active: false},
+    );
     res.json(deletedMembership);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -83,15 +84,17 @@ router.patch("/:id", verifyToken, async (req, res) => {
 async function getMemberships(req, res, next) {
   let membership;
   try {
-    membership = await Membership.findById(req.params.id);
+    membership = await Membership.findOne({ _id: req.params.id, active: true });
     if (!membership) {
       return res.status(404).json({ message: "Membership not found!" });
     }
 
     const services = [];
     for (const serviceId of membership.serviceIds) {
-      const service = await Services.findById(serviceId);
-      services.push({ ...service?.toObject(), count: serviceId.count });
+      const service = await Services.findOne({ _id: serviceId, active: true });
+      if (service) {
+        services.push(service?.toObject());
+      }
     }
 
     membership = Object.assign({}, membership?.toObject(), {
