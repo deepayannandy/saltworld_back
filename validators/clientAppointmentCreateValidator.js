@@ -2,7 +2,7 @@ import joi from "@hapi/joi";
 
 export const clientAppointmentCreateValidator = (data) => {
   const schema = joi.array().items({
-    membershipId: joi.string().optional(),
+    membershipId: joi.string().optional().allow(""),
     serviceId: joi.string().required(),
     personCount: joi.number().required(),
     startDateTime: joi.date().required(),

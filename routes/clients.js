@@ -103,7 +103,9 @@ router.get("/:id", async (req, res) => {
     const services = [];
     for (const serviceId of membership.serviceIds) {
       const service = await Service.findById(serviceId);
-      services.push(service?.toObject());
+      if (service) {
+        services.push(service.toObject());
+      }
     }
     membership = membership?.toObject();
     membership["services"] = services;

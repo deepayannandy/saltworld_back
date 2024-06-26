@@ -137,6 +137,7 @@ const clientSchema = new Schema({
       },
       membershipId: {
         type: String,
+        required: false,
       },
       serviceId: {
         type: String,

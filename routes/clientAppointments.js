@@ -67,10 +67,13 @@ router.post("/:clientId", verifyToken, async (req, res) => {
   for (const data of value) {
     const startDateTime = new Date(data.startDateTime);
     const endDateTime = addMinutes(startDateTime, data.duration);
-    const membership = await Membership.findById(data.membershipId);
     const service = await Service.findById(data.serviceId);
     const resource = service.resourceType;
     const rescheduleCount = 0;
+    let membership;
+    if (data.membershipId) {
+      membership = await Membership.findById(data.membershipId);
+    }
 
     const formattedStartDateTime = startDateTime.toString();
     const membershipName = membership ? ` (${membership.name})` : "";
