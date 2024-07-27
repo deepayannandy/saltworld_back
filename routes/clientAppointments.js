@@ -169,8 +169,14 @@ router.get("/:id", verifyToken, async (req, res) => {
   if (!appointment) {
     return res.status(404).json({ message: "Appointment data not found!" });
   }
-
-  const membership = await Membership.findById(appointment.membershipId);
+  let membership
+  console.log(appointment.membershipId)
+  console.log(appointment.membershipId!=undefined && appointment.membershipId.length>0);
+  try{
+   if(appointment.membershipId!=undefined && appointment.membershipId.length>0) membership = await Membership.findById(appointment.membershipId);
+  }catch(e){
+    console.log(e)
+  }
   const services = [];
   if (membership) {
     for (const serviceId of membership.serviceIds) {
@@ -389,8 +395,8 @@ router.patch("/:id", verifyToken, async (req, res) => {
   }
 
   const { value } = clientAppointmentRescheduleValidator(req.body);
-
-  const membership = await Membership.findById(value.membershipId);
+  let membership
+  if(value.membershipId!=undefined && value.membershipId.length>0) membership = await Membership.findById(value.membershipId);
   const service = await Service.findById(value.serviceId);
   const resource = service.resourceType;
   const rescheduleCount = appointment.rescheduleCount + 1;
