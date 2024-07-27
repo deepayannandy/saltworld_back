@@ -87,19 +87,96 @@ const clientSchema = new Schema({
   },
   clientMemberships: [
     {
-      membershipId: {
+      name: {
         type: String,
         required: true,
       },
-      paidAmount: {
+      services: {
+        type: [{
+          name: {
+            type: String,
+            required: true,
+          },
+          category: {
+            type: String,
+            required: true,
+          },
+          description: {
+            type: String,
+            required: true,
+          },
+          duration: {
+            type: Number,
+            required: true,
+          },
+          cost: {
+            type: Number,
+            required: true,
+          },
+          sellingCost: {
+            type: Number,
+            required: true,
+          },
+          taxRate: {
+            type: Number,
+            required: true,
+          },
+          hsnCode: {
+            type: String,
+            required: true,
+          },
+          resourceType: {
+            type: String,
+            required: true,
+          },
+          includeTax: {
+            type: Number,
+            required: true,
+          },
+          active: {
+            type: Boolean,
+            required: true,
+          },
+          branch: {
+            type: String,
+            required: true,
+          },
+          sessions:{
+            type: Number,
+            required: true,
+          },
+        }],
+        required: true,
+      },
+      description: {
+        type: String,
+        required: true,
+      },
+      sellingCost: {
         type: Number,
+        required: true,
+      },
+      taxRate: {
+        type: Number,
+        required: true,
+      },
+      hsnCode: {
+        type: String,
         required: true,
       },
       active: {
         type: Boolean,
         required: true,
       },
-      countLeft: {
+      branch: {
+        type: String,
+        required: true,
+      },
+      isUnlimited: {
+        type: Boolean,
+        required: true,
+      },
+      validity: {
         type: Number,
         required: true,
       },

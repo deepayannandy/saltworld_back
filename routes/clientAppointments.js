@@ -63,7 +63,6 @@ router.post("/:clientId", verifyToken, async (req, res) => {
       }
     }
   }
-  
   for (const data of value) {
     const startDateTime = new Date(data.startDateTime);
     const endDateTime = addMinutes(startDateTime, data.duration);
@@ -74,11 +73,25 @@ router.post("/:clientId", verifyToken, async (req, res) => {
     if (data.membershipId) {
       membership = await Membership.findById(data.membershipId);
     }
+    if(data.duration<1){
+      return res.status(500).json({ message: `Not able to book an appointment for ${service.name}` });
+    }
 
     const formattedStartDateTime = startDateTime.toString();
     const membershipName = membership ? ` (${membership.name})` : "";
     const title = `${service.name}${membershipName} for ${client.firstName} ${client.lastName} at ${formattedStartDateTime}`;
 
+    for(let memberC in client.clientMemberships){
+      if(client.clientMemberships[memberC]._id.equals(data.membershipId)){
+        for(let serviceC in client.clientMemberships[memberC].services){
+          if(client.clientMemberships[memberC].services[serviceC]._id.equals(data.serviceId)){
+           client.clientMemberships[memberC].services[serviceC].sessions=client.clientMemberships[memberC].services[serviceC].sessions-1;
+           break
+          }
+        }
+        break
+      }
+    }
     client.appointments.push({
       ...data,
       title,
@@ -247,6 +260,29 @@ router.get("/", verifyToken, async (req, res) => {
       allAppointments = allAppointments.concat(appointments);
     }
 
+    res.json(allAppointments);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+//get all appointments
+router.get("/byday/:date", verifyToken, async (req, res) => {
+  if (req.tokendata.userType !== "Admin") {
+    return res.status(500).json({ message: "Access Prohibited!" });
+  }
+  console.log(req.params.date)
+  try {
+    const clients = await Client.find();
+    let allAppointments = [];
+    for (const client of clients) {
+      const appointments = client.appointments.map((appointment) => {
+        appointment = appointment?.toObject();
+        appointment["clientId"] = client.id;
+       return appointment;
+      }).filter((appointment)=>appointment.startDateTime.toLocaleDateString().replaceAll("/","-")===req.params.date);
+      allAppointments = allAppointments.concat(appointments);
+    }
     res.json(allAppointments);
   } catch (error) {
     res.status(500).json({ message: error.message });

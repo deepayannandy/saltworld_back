@@ -13,38 +13,27 @@ router.post("/:clientId", verifyToken, async (req, res) => {
   if (req.tokendata.userType !== "Admin") {
     return res.status(500).json({ message: "Access Prohibited!" });
   }
+
   req.body.active = true;
-  const value  = await Membership.findById(req.body.membershipId);
-  console.log(value)
+  const { value } = clientMembershipCreateValidator(req.body);
+
   const startDate = new Date(req.body.startDate);
   const endDate = new Date(req.body.endDate);
-  const test= "Deepayan";
+
   let client = await Client.findById(req.params.clientId);
   if (!client) {
     return res.status(404).json({ message: "Client Data not found!" });
   }
+  
   try {
-    client.clientMemberships.push(
-    {name:value.name,
-    services: value.services,
-    description: value.description,
-    sellingCost: value.sellingCost,
-    taxRate: value.taxRate,
-    hsnCode: value.hsnCode,
-    active: value.active,
-    branch:value.branch,
-    isUnlimited: value.isUnlimited,
-    validity: value.validity,
-    startDate,
-    endDate}
-  );
-    console.log(client);
-    console.log("I am called");
+    client.clientMemberships.push({ ...value, startDate, endDate });
     client = await client.save();
-    console.log(client);
-    res.status(201).json(client._id);
+    const latestClientMembership = client.clientMemberships.find(
+      (clientMembership) => clientMembership.membershipId === value.membershipId
+    );
+
+    res.status(201).json(latestClientMembership._id);
   } catch (error) {
-    console.log(error)
     res.status(400).json({ message: error.message });
   }
 });
@@ -60,7 +49,22 @@ router.get("/:clientId", verifyToken, async (req, res) => {
   }
 
   try {
-    res.status(200).json(client.clientMemberships);
+    const clientMembershipData = [];
+    for (const clientMembership of client.clientMemberships) {
+      let data = clientMembership?.toObject();
+      const membership = await Membership.findById(
+        clientMembership.membershipId
+      );
+      data = Object.assign({}, data, membership?.toObject());
+      console.log(data)
+      for (const serviceId of membership.serviceIds) {
+        const service = await Services.findById(serviceId);
+        const serviceName = service?.name;
+        data = Object.assign({}, data, {..._.omit(service?.toObject(), 'name'), serviceName});
+        clientMembershipData.push(data);
+      }
+    }
+    res.json(clientMembershipData);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

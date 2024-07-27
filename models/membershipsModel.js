@@ -5,8 +5,8 @@ const membershipsSchema = new Schema({
     type: String,
     required: true,
   },
-  serviceIds: {
-    type: [String],
+  services: {
+    type: [Object],
     required: true,
   },
   description: {
@@ -39,10 +39,6 @@ const membershipsSchema = new Schema({
   },
   isUnlimited: {
     type: Boolean,
-    required: true,
-  },
-  count: {
-    type: Number,
     required: true,
   },
   validity: {
