@@ -114,27 +114,26 @@ router.post("/:clientId", verifyToken, async (req, res) => {
         from: "appsdny@gmail.com",
         to: client.email,
         subject: `🤗  Hi  ${client.firstName}, your appointment is confirmed!`,
-        text: `Booking ref: ${latestClientAppointment._id}
-                ${startDate} with Salt World
+        text: `Booking ref: ${latestClientAppointment._id} ${startDate} with Salt World
 
-                Appointment details
-                ${latestClientAppointment.title}
+Appointment details
+  ${latestClientAppointment.title}
 
-                Location
-                Salt World
-                Site #1, 2nd Floor, Sri Chakra building, 18th Main, HSR Layout Sec 3, Behind Saibaba temple, Bengaluru (HSR Layout), 560102, Karnataka, IN
-                GPS: http://tinyurl.com/saltworld
+Location
+  Salt World
+  Site #1, 2nd Floor, Sri Chakra building, 18th Main, HSR Layout Sec 3, Behind Saibaba temple, Bengaluru (HSR Layout), 560102, Karnataka, IN
+  GPS: http://tinyurl.com/saltworld
 
-                Cancellation / Reschedule policy
-                    1. Reschedule is allowed 48 hours prior to the scheduled session, however under circumstances like high fever, monthly period cycle or any other health complications reschedule is still permitted before 3 hours of the scheduled session.
-                    2. If the reschedule request is NOT received within the above-mentioned window, then it will be considered as session availed.
-                    3. In case of cancellation due to unavoidable situations, if we receive the cancellation request before 3 hours of the scheduled session, we will provide the credit note, that can be availed within a year.
-                    4. If the scheduled session is canceled, it cannot be provided back on the weekend / public holiday. It can be availed only on the weekdays.
+Cancellation / Reschedule policy
+  1. Reschedule is allowed 48 hours prior to the scheduled session, however under circumstances like high fever, monthly period cycle or any other health complications reschedule is still permitted before 3 hours of the scheduled session.
+  2. If the reschedule request is NOT received within the above-mentioned window, then it will be considered as session availed.
+  3. In case of cancellation due to unavoidable situations, if we receive the cancellation request before 3 hours of the scheduled session, we will provide the credit note, that can be availed within a year.
+  4. If the scheduled session is canceled, it cannot be provided back on the weekend / public holiday. It can be availed only on the weekdays.
 
-                Important info
-                Please be available at the location 30 minutes prior to your appointment. Please know that delays in reaching the location will impact the duration of the session.
+Important info
+  Please be available at the location 30 minutes prior to your appointment. Please know that delays in reaching the location will impact the duration of the session.
 
-                For any assistance dial / WhatsApp: +91 7687878793`,
+For any assistance dial / WhatsApp: +91 7687878793`,
       };
       transporter.sendMail(mail, function (error, info) {
         if (error) {
@@ -451,26 +450,26 @@ router.patch("/:id", verifyToken, async (req, res) => {
       to: client.email,
       subject: `⌛ Hi ${client.firstName}, your appointment has been rescheduled!`,
       text: `Booking ref: ${appointment._id}
-              Your appointment with Salt World is now booked for ${startDateTime}
+Your appointment with Salt World is now booked for ${startDateTime}
                           
-              Appointment details
-              ${appointment.title}
+Appointment details
+  ${appointment.title}
                           
-              Location
-              Salt World
-              Site #1, 2nd Floor, Sri Chakra building, 18th Main, HSR Layout Sec 3, Behind Saibaba temple, Bengaluru (HSR Layout), 560102, Karnataka, IN
-              GPS: http://tinyurl.com/saltworld
+Location
+  Salt World
+  Site #1, 2nd Floor, Sri Chakra building, 18th Main, HSR Layout Sec 3, Behind Saibaba temple, Bengaluru (HSR Layout), 560102, Karnataka, IN
+  GPS: http://tinyurl.com/saltworld
                           
-              Cancellation / Reschedule policy
-              1. Reschedule is allowed 48 hours prior to the scheduled session, however under circumstances like high fever, monthly period cycle or any other health complications reschedule is still permitted before 3 hours of the scheduled session.
-              2. If the reschedule request is NOT received within the above-mentioned window, then it will be considered as session availed.
-              3. In case of cancellation due to unavoidable situations, if we receive the cancellation request before 3 hours of the scheduled session, we will provide the credit note, that can be availed within a year.
-              4. If the scheduled session is canceled, it cannot be provided back on the weekend / public holiday. It can be availed only on the weekdays.
+Cancellation / Reschedule policy
+  1. Reschedule is allowed 48 hours prior to the scheduled session, however under circumstances like high fever, monthly period cycle or any other health complications reschedule is still permitted before 3 hours of the scheduled session.
+  2. If the reschedule request is NOT received within the above-mentioned window, then it will be considered as session availed.
+  3. In case of cancellation due to unavoidable situations, if we receive the cancellation request before 3 hours of the scheduled session, we will provide the credit note, that can be availed within a year.
+  4. If the scheduled session is canceled, it cannot be provided back on the weekend / public holiday. It can be availed only on the weekdays.
 
-              Important info
-              Please be available at the location 30 minutes prior to your appointment. Please know that delays in reaching the location will impact the duration of the session.
+Important info
+  Please be available at the location 30 minutes prior to your appointment. Please know that delays in reaching the location will impact the duration of the session.
 
-              For any assistance dial / WhatsApp: +91 7687878793`,
+For any assistance dial / WhatsApp: +91 7687878793`,
     };
     transporter.sendMail(mail, function (error, info) {
       if (error) {
@@ -545,26 +544,26 @@ router.delete("/:id", verifyToken, async (req, res) => {
       to: client.email,
       subject: `🥺 Hi ${client.firstName}, your appointment has been canceled`,
       text: `Booking ref: ${appointment._id}
-              Appointment was scheduled for ${appointment.startDateTime} with Salt World
+Appointment was scheduled for ${appointment.startDateTime} with Salt World
                           
-              Appointment details
-              ${appointment.title}
+Appointment details
+  ${appointment.title}
                           
-              Location
-              Salt World
-              Site #1, 2nd Floor, Sri Chakra building, 18th Main, HSR Layout Sec 3, Behind Saibaba temple, Bengaluru (HSR Layout), 560102, Karnataka, IN
-              GPS: http://tinyurl.com/saltworld
+Location
+  Salt World
+  Site #1, 2nd Floor, Sri Chakra building, 18th Main, HSR Layout Sec 3, Behind Saibaba temple, Bengaluru (HSR Layout), 560102, Karnataka, IN
+GPS: http://tinyurl.com/saltworld
                           
-              Cancellation / Reschedule policy
-              1. Reschedule is allowed 48 hours prior to the scheduled session, however under circumstances like high fever, monthly period cycle or any other health complications reschedule is still permitted before 3 hours of the scheduled session.
-              2. If the reschedule request is NOT received within the above-mentioned window, then it will be considered as session availed.
-              3. In case of cancellation due to unavoidable situations, if we receive the cancellation request before 3 hours of the scheduled session, we will provide the credit note, that can be availed within a year.
-              4. If the scheduled session is canceled, it cannot be provided back on the weekend / public holiday. It can be availed only on the weekdays.
+Cancellation / Reschedule policy
+  1. Reschedule is allowed 48 hours prior to the scheduled session, however under circumstances like high fever, monthly period cycle or any other health complications reschedule is still permitted before 3 hours of the scheduled session.
+  2. If the reschedule request is NOT received within the above-mentioned window, then it will be considered as session availed.
+  3. In case of cancellation due to unavoidable situations, if we receive the cancellation request before 3 hours of the scheduled session, we will provide the credit note, that can be availed within a year.
+  4. If the scheduled session is canceled, it cannot be provided back on the weekend / public holiday. It can be availed only on the weekdays.
 
-              Important info
-              Please be available at the location 30 minutes prior to your appointment. Please know that delays in reaching the location will impact the duration of the session.
+Important info
+  Please be available at the location 30 minutes prior to your appointment. Please know that delays in reaching the location will impact the duration of the session.
 
-              For any assistance dial / WhatsApp: +91 7687878793`,
+For any assistance dial / WhatsApp: +91 7687878793`,
     };
     transporter.sendMail(mail, function (error, info) {
       if (error) {
