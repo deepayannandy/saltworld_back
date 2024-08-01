@@ -244,6 +244,10 @@ const clientSchema = new Schema({
         type: String,
         required: true,
       },
+      isCancelled: {
+        type: Boolean,
+        required: false,
+      },
     },
   ],
 });

@@ -48,8 +48,9 @@ router.post("/:clientId", verifyToken, async (req, res) => {
       for (const appointment of client.appointments) {
         if (
           startDateTime >= appointment.startDateTime &&
-          startDateTime <= appointment.endDateTime
+          startDateTime <= appointment.endDateTime && appointment.isCancelled==false
         ) {
+          console.log(appointment)
           return res.status(422).json({
             message: `This slot between ${format(
               appointment.startDateTime,
@@ -80,7 +81,7 @@ router.post("/:clientId", verifyToken, async (req, res) => {
     const formattedStartDateTime = startDateTime.toString();
     const membershipName = membership ? ` (${membership.name})` : "";
     const title = `${service.name}${membershipName} for ${client.firstName} ${client.lastName} at ${formattedStartDateTime}`;
-
+    const isCancelled=false;
     for(let memberC in client.clientMemberships){
       if(client.clientMemberships[memberC]._id.equals(data.membershipId)){
         for(let serviceC in client.clientMemberships[memberC].services){
@@ -94,6 +95,7 @@ router.post("/:clientId", verifyToken, async (req, res) => {
     }
     client.appointments.push({
       ...data,
+      isCancelled,
       title,
       resource,
       rescheduleCount,
@@ -225,8 +227,9 @@ router.get("/client/:clientId", verifyToken, async (req, res) => {
       const date = format(appointment.startDateTime, "dd-MMM-yyyy");
       const startTime = format(appointment.startDateTime, "hh:mm a");
       const endTime = format(appointment.endDateTime, "hh:mm a");
+      const ismembership = appointment.membershipId.length>0?"Yes":"No";
       const status =
-        new Date() < appointment.startDateTime
+       appointment.isCancelled==true?"Cancelled": new Date() < appointment.startDateTime
           ? "Upcoming"
           : new Date() > appointment.endDateTime
           ? "Completed"
@@ -238,6 +241,7 @@ router.get("/client/:clientId", verifyToken, async (req, res) => {
         startTime,
         endTime,
         status,
+        ismembership
       });
     });
     res.send(appointmentsData);
@@ -261,7 +265,7 @@ router.get("/", verifyToken, async (req, res) => {
         appointment = appointment?.toObject();
         appointment["clientId"] = client.id;
         return appointment;
-      });
+      }).filter((appointment)=> {return !appointment.isCancelled});
 
       allAppointments = allAppointments.concat(appointments);
     }
@@ -286,7 +290,7 @@ router.get("/byday/:date", verifyToken, async (req, res) => {
         appointment = appointment?.toObject();
         appointment["clientId"] = client.id;
        return appointment;
-      }).filter((appointment)=>appointment.startDateTime.toLocaleDateString().replaceAll("/","-")===req.params.date);
+      }).filter((appointment)=>appointment.startDateTime.toLocaleDateString().replaceAll("/","-")===req.params.date && !appointment.isCancelled );
       allAppointments = allAppointments.concat(appointments);
     }
     res.json(allAppointments);
@@ -395,8 +399,6 @@ router.patch("/:id", verifyToken, async (req, res) => {
   }
 
   const { value } = clientAppointmentRescheduleValidator(req.body);
-  let membership
-  if(value.membershipId!=undefined && value.membershipId.length>0) membership = await Membership.findById(value.membershipId);
   const service = await Service.findById(value.serviceId);
   const resource = service.resourceType;
   const rescheduleCount = appointment.rescheduleCount + 1;
@@ -410,8 +412,9 @@ router.patch("/:id", verifyToken, async (req, res) => {
       if (
         startDateTime >= appointmentData.startDateTime &&
         startDateTime <= appointmentData.endDateTime &&
-        String(appointmentData._id) !== String(appointment._id)
+        String(appointmentData._id) !== String(appointment._id) && appointmentData.isCancelled==false
       ) {
+        console.log(appointment)
         return res.status(422).json({
           message: `This slot between ${format(
             appointmentData.startDateTime,
@@ -424,15 +427,12 @@ router.patch("/:id", verifyToken, async (req, res) => {
       }
     }
   }
-
   const formattedStartDateTime = startDateTime.toString();
-  const membershipName = membership ? ` (${membership.name})` : "";
-  const title = `${service.name}${membershipName} for ${client.firstName} ${client.lastName} at ${formattedStartDateTime}`;
-
+  const title = `${service.name} for ${client.firstName} ${client.lastName} at ${formattedStartDateTime}`;
   client.appointments = client.appointments.map((appointment) => {
     if (appointment._id.toString() === req.params.id) {
       appointment = Object.assign({}, appointment, {
-        ..._.omit(value, "clientId"),
+        ..._.omit(value, "clientId","membershipId"),
         endDateTime,
         resource,
         rescheduleCount,
@@ -506,11 +506,37 @@ router.delete("/:id", verifyToken, async (req, res) => {
   if (!appointment) {
     return res.status(404).json({ message: "Client appointment not found" });
   }
+  let selectedAppointment;
+  client.appointments= client.appointments.map((appointment)=>{
+    if(appointment.id == req.params.id)
+      { 
+        selectedAppointment=appointment;
+        appointment.isCancelled=true;
+       return appointment} 
+       else{ return appointment} })
 
-  client.appointments = client.appointments.filter(
-    (appointment) => appointment.id !== req.params.id
-  );
 
+  if(selectedAppointment.membershipId.length>0){
+    console.log("This need to be reimbursed");
+    client.clientMemberships=client.clientMemberships.map((membership)=>{
+      if(membership._id.equals(selectedAppointment.membershipId)){
+        let temp_services=membership.services.map((service)=>{
+          if(service._id.equals(selectedAppointment.serviceId))
+          {
+            console.log(service.name)
+            service.sessions=service.sessions+1
+            return service
+          }
+          return service
+        })
+        membership.services=temp_services;
+        console.log(membership);
+        return membership
+      }
+      return membership
+    })
+  }
+  
   try {
     await client.save();
 
