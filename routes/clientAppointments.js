@@ -227,12 +227,13 @@ router.get("/client/:clientId", verifyToken, async (req, res) => {
       const startTime = format(appointment.startDateTime, "hh:mm a");
       const endTime = format(appointment.endDateTime, "hh:mm a");
       const ismembership = appointment.membershipId.length>0?"Yes":"No";
-      const status =
+      let status =
        appointment.isCancelled==true?"Cancelled": new Date() < appointment.startDateTime
           ? "Upcoming"
           : new Date() > appointment.endDateTime
           ? "Completed"
           : "Live";
+     appointment.rescheduleCount>0?status=status+" (Rescheduled)":"";
 
       return Object.assign({}, appointment?.toObject(), {
         clientId: client.id,
