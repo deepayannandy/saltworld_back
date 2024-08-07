@@ -148,13 +148,12 @@ router.post("/:clientId", verifyToken, async (req, res) => {
         subject: `Your appointment at Salt World is confirmed! `,
         html:message,
       };
-      let isSent=false;
       transporter.sendMail(mail, function (error, info) {
         if (error) {
           console.log(error);
         } else {
           console.log("Email sent: " + info.response);
-          isSent=true;
+
         }
       });
       
@@ -165,7 +164,7 @@ router.post("/:clientId", verifyToken, async (req, res) => {
         emailBody: message,
         emailType: "New Appointment",
         timeStamp: new Date(),
-        isSuccessfullySend:isSent
+        isSuccessfullySend:true
       })
       let communication = await emailCom.save();
 
@@ -507,23 +506,23 @@ router.patch("/:id", verifyToken, async (req, res) => {
       subject: `Your appointment at Salt World is rescheduled! `,
       html:message,
     };
-    let isSent=false;
+
     transporter.sendMail(mail, function (error, info) {
       if (error) {
         console.log(error);
       } else {
         console.log("Email sent: " + info.response);
-        isSent=true;
+
       }
     });
     const emailCom= new emailLogModel({
       userId: client._id,
       userEmail: client.email,
-      bookingId: latestClientAppointment._id,
+      bookingId: appointment._id,
       emailBody: message,
       emailType: "Reschedule",
       timeStamp: new Date(),
-      isSuccessfullySend:isSent
+      isSuccessfullySend:true
     })
     let communication = await emailCom.save();
     res.status(201).json(appointment._id);
@@ -615,24 +614,23 @@ router.delete("/:id", verifyToken, async (req, res) => {
       subject: `Your appointment at Salt World is cancelled!`,
       html:message,
     };
-    let isSent=false;
     transporter.sendMail(mail, function (error, info) {
       if (error) {
         console.log(error);
 
       } else {
         console.log("Email sent: " + info.response);
-        isSent=true;
+       
       }
     });
     const emailCom= new emailLogModel({
       userId: client._id,
       userEmail: client.email,
-      bookingId: latestClientAppointment._id,
+      bookingId: appointment._id,
       emailBody: message,
       emailType: "Cancellation",
       timeStamp: new Date(),
-      isSuccessfullySend:isSent
+      isSuccessfullySend:true,
     })
     let communication = await emailCom.save();
     res.status(201).json({ message: "Appointment deleted successfully" });
