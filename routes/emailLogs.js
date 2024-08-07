@@ -34,7 +34,7 @@ router.post('/:email',async (req,res)=>{
     const startTime= format(new Date(), "HH:mm");
     const message=`<p><b>Dear Deepayan Nandy,</b></p>
 
-<p>Thank you for choosing Salt World for your wellness needs! We are deddghted to confirm your booking and look forward to providing you with an exceptional rejuvenating and relaxing experience.</p>
+<p>Thank you for choosing Salt World for your wellness needs! We are delighted to confirm your booking and look forward to providing you with an exceptional rejuvenating and relaxing experience.</p>
 
 <p><b>Booking Details: </b></p>
 <b>Name:</b> Deepayan Nandy <br> 
@@ -49,7 +49,7 @@ Google Map: <a href="http://tinyurl.com/saltworld">http://tinyurl.com/saltworld<
 
 <p><b>Arrival:</b> Please arrive at least <b>30 minutes before your appointment time</b></p>
 
-<p>Kindly note that <b>perfumes / flowers / smelddng substances should be avoided</b> while entering Salt World. This is because others can be allergic to certain smells.</p>
+<p>Kindly note that <b>perfumes / flowers / smelling substances should be avoided</b> while entering Salt World. This is because others can be allergic to certain smells.</p>
 
 <p>Please wear comfortable clothing while you are relaxing in Salt cave. Do not wear tight clothes that creates difficulty in breathing. Wet clothes are not allowed. So, in case of rains, please get an extra set of clothes.</p>
 
