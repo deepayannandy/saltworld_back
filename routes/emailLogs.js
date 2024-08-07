@@ -64,7 +64,7 @@ Google Map: <a href="http://tinyurl.com/saltworld">http://tinyurl.com/saltworld<
         from: "appsdny@gmail.com",
         to: req.params.email,
         subject: `Your appointment at Salt World is confirmed! `,
-        text: message,
+        html: message,
       };
       transporter.sendMail(mail, function (error, info) {
         if (error) {
