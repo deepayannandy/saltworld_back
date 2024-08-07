@@ -561,7 +561,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
     await client.save();
     const startDate = format(startDateTime, "dd-MMM-yyyy");
     const startTime = format(startDateTime, "HH : mm");
-    const service = await Service.findById(value.serviceId);
+    const service = await Service.findById(appointment.serviceId);
     const message=`<p><b>Dear ${client.firstName},</b></p>
 
       <p>Your below appointment is cancelled. We look forward to host you soon</p>
@@ -591,7 +591,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
     transporter.sendMail(mail, function (error, info) {
       if (error) {
         console.log(error);
-        
+
       } else {
         console.log("Email sent: " + info.response);
       }
