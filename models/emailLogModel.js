@@ -25,6 +25,11 @@ const emailLogSchema = new Schema({
     type: String,
     required: true,
   },
+  isSuccessfullySend:{
+    type: Boolean,
+    required: true,
+  },
+
 });
 
 export default model("emailLog", emailLogSchema);

@@ -7,6 +7,8 @@ import { clientAppointmentCreateValidator } from "../validators/clientAppointmen
 import Membership from "../models/membershipsModel.js";
 import Service from "../models/servicesModel.js";
 import { clientAppointmentRescheduleValidator } from "../validators/clientAppointmentRescheduleValidator.js";
+import emailLogModel from "../models/emailLogModel.js";
+
 import _ from "lodash";
 
 const router = Router();
@@ -139,19 +141,34 @@ router.post("/:clientId", verifyToken, async (req, res) => {
       <p>Warm regards, <br>Your friendly team <br>Salt World <br>+91 76878 78793 / WhatsApp:<a href="https://wame.pro/saltworld"> https://wame.pro/saltworld</a> 
         <br>
       <a href="www.saltworld.in">www.saltworld.in</a></p>`
+
       const mail = {
         from: "appsdny@gmail.com",
         to: client.email,
         subject: `Your appointment at Salt World is confirmed! `,
         html:message,
       };
+      let isSent=false;
       transporter.sendMail(mail, function (error, info) {
         if (error) {
           console.log(error);
         } else {
           console.log("Email sent: " + info.response);
+          isSent=true;
         }
       });
+      
+      const emailCom= new emailLogModel({
+        userId: client._id,
+        userEmail: client.email,
+        bookingId: latestClientAppointment._id,
+        emailBody: message,
+        emailType: "New Appointment",
+        timeStamp: new Date(),
+        isSuccessfullySend:isSent
+      })
+      let communication = await emailCom.save();
+
     } catch (error) {
       return res.status(400).json({ message: error.message });
     }
@@ -490,13 +507,25 @@ router.patch("/:id", verifyToken, async (req, res) => {
       subject: `Your appointment at Salt World is rescheduled! `,
       html:message,
     };
+    let isSent=false;
     transporter.sendMail(mail, function (error, info) {
       if (error) {
         console.log(error);
       } else {
         console.log("Email sent: " + info.response);
+        isSent=true;
       }
     });
+    const emailCom= new emailLogModel({
+      userId: client._id,
+      userEmail: client.email,
+      bookingId: latestClientAppointment._id,
+      emailBody: message,
+      emailType: "Reschedule",
+      timeStamp: new Date(),
+      isSuccessfullySend:isSent
+    })
+    let communication = await emailCom.save();
     res.status(201).json(appointment._id);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -573,8 +602,6 @@ router.delete("/:id", verifyToken, async (req, res) => {
       <b>Service(s):</b>  ${service.name} <br> 
       <b>Location:</b> Salt World, Site #1, 2nd Floor, Sri Chakra building, 18th Main, HSR Layout Sec 3, Behind Saibaba temple, Bengaluru (HSR Layout), 560102, Karnataka, IN<br> <br> 
       
-      Google Map: <a href="http://tinyurl.com/saltworld">http://tinyurl.com/saltworld</a>
-      
       <p><b>Contact Us:</b><br> If you have any questions or need further assistance, please feel free to WhatsApp us at +91 76878 78793 / <a href="https://wame.pro/saltworld">https://wame.pro/saltworld</a> . Our team is here to ensure you have a seamless and enjoyable experience.</p>
       
       <p>We look forward to welcoming you to Salt World!</p>
@@ -588,14 +615,26 @@ router.delete("/:id", verifyToken, async (req, res) => {
       subject: `Your appointment at Salt World is cancelled!`,
       html:message,
     };
+    let isSent=false;
     transporter.sendMail(mail, function (error, info) {
       if (error) {
         console.log(error);
 
       } else {
         console.log("Email sent: " + info.response);
+        isSent=true;
       }
     });
+    const emailCom= new emailLogModel({
+      userId: client._id,
+      userEmail: client.email,
+      bookingId: latestClientAppointment._id,
+      emailBody: message,
+      emailType: "Cancellation",
+      timeStamp: new Date(),
+      isSuccessfullySend:isSent
+    })
+    let communication = await emailCom.save();
     res.status(201).json({ message: "Appointment deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
