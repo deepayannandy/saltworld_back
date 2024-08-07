@@ -136,7 +136,7 @@ router.post("/:clientId", verifyToken, async (req, res) => {
       
       <p>We look forward to welcoming you to Salt World!</p>
       
-      <p>Warm regards, Your friendly team Salt World +91 76878 78793 / WhatsApp:<a href="https://wame.pro/saltworld"> https://wame.pro/saltworld</a> 
+      <p>Warm regards, <br>Your friendly team <br>Salt World <br>+91 76878 78793 / WhatsApp:<a href="https://wame.pro/saltworld"> https://wame.pro/saltworld</a> 
         <br>
       <a href="www.saltworld.in">www.saltworld.in</a></p>`
       const mail = {
@@ -454,32 +454,41 @@ router.patch("/:id", verifyToken, async (req, res) => {
 
   try {
     await client.save();
+    const startDate = format(startDateTime, "dd-MMM-yyyy");
+    const startTime = format(startDateTime, "HH : mm");
+      const message=`<p><b>Dear ${client.firstName},</b></p>
 
+      <p>Thank you for choosing Salt World for your wellness needs! We would like to inform you that your original appointment is rescheduled. We look forward to providing you with an exceptional rejuvenating and relaxing experience.</p>
+      
+      <p><b>Booking Details: </b></p>
+      <b>Name:</b> ${client.firstName} ${client.lastName} <br> 
+      <b>Date:</b> ${startDate} <br> 
+      <b>Time:</b> ${startTime} <br> 
+      <b>Service(s):</b>  ${service.name} <br> 
+      <b>Location:</b> Salt World, Site #1, 2nd Floor, Sri Chakra building, 18th Main, HSR Layout Sec 3, Behind Saibaba temple, Bengaluru (HSR Layout), 560102, Karnataka, IN<br> <br> 
+      
+      Google Map: <a href="http://tinyurl.com/saltworld">http://tinyurl.com/saltworld</a>
+      
+      <h4><p>Important Information:</p></h4>
+      
+      <p><b>Arrival:</b> Please arrive at least <b>30 minutes before your appointment time</b></p>
+      
+      <p>Kindly note that <b>perfumes / flowers / smelling substances should be avoided</b> while entering Salt World. This is because others can be allergic to certain smells.</p>
+      
+      <p>Please wear comfortable clothing while you are relaxing in Salt cave. Do not wear tight clothes that creates difficulty in breathing. Wet clothes are not allowed. So, in case of rains, please get an extra set of clothes.</p>
+      
+      <p><b>Contact Us:</b><br> If you have any questions or need further assistance, please feel free to WhatsApp us at +91 76878 78793 / <a href="https://wame.pro/saltworld">https://wame.pro/saltworld</a> . Our team is here to ensure you have a seamless and enjoyable experience.</p>
+      
+      <p>We look forward to welcoming you to Salt World!</p>
+      
+      <p>Warm regards, <br>Your friendly team <br>Salt World <br>+91 76878 78793 / WhatsApp:<a href="https://wame.pro/saltworld"> https://wame.pro/saltworld</a> 
+        <br>
+      <a href="www.saltworld.in">www.saltworld.in</a></p>`
     const mail = {
       from: "appsdny@gmail.com",
       to: client.email,
-      subject: `⌛ Hi ${client.firstName}, your appointment has been rescheduled!`,
-      text: `Booking ref: ${appointment._id}
-Your appointment with Salt World is now booked for ${startDateTime}
-                          
-Appointment details
-  ${appointment.title}
-                          
-Location
-  Salt World
-  Site #1, 2nd Floor, Sri Chakra building, 18th Main, HSR Layout Sec 3, Behind Saibaba temple, Bengaluru (HSR Layout), 560102, Karnataka, IN
-  GPS: http://tinyurl.com/saltworld
-                          
-Cancellation / Reschedule policy
-  1. Reschedule is allowed 48 hours prior to the scheduled session, however under circumstances like high fever, monthly period cycle or any other health complications reschedule is still permitted before 3 hours of the scheduled session.
-  2. If the reschedule request is NOT received within the above-mentioned window, then it will be considered as session availed.
-  3. In case of cancellation due to unavoidable situations, if we receive the cancellation request before 3 hours of the scheduled session, we will provide the credit note, that can be availed within a year.
-  4. If the scheduled session is canceled, it cannot be provided back on the weekend / public holiday. It can be availed only on the weekdays.
-
-Important info
-  Please be available at the location 30 minutes prior to your appointment. Please know that delays in reaching the location will impact the duration of the session.
-
-For any assistance dial / WhatsApp: +91 7687878793`,
+      subject: `Your appointment at Salt World is rescheduled! `,
+      html:message,
     };
     transporter.sendMail(mail, function (error, info) {
       if (error) {
@@ -546,38 +555,43 @@ router.delete("/:id", verifyToken, async (req, res) => {
     })
   }
   
+  const startDateTime = new Date(appointment.startDateTime);
+
   try {
     await client.save();
+    const startDate = format(startDateTime, "dd-MMM-yyyy");
+    const startTime = format(startDateTime, "HH : mm");
+    const service = await Service.findById(value.serviceId);
+    const message=`<p><b>Dear ${client.firstName},</b></p>
 
+      <p>Your below appointment is cancelled. We look forward to host you soon</p>
+      
+      <p><b>Booking Details: </b></p>
+      <b>Name:</b> ${client.firstName} ${client.lastName} <br> 
+      <b>Date:</b> ${startDate} <br> 
+      <b>Time:</b> ${startTime} <br> 
+      <b>Service(s):</b>  ${service.name} <br> 
+      <b>Location:</b> Salt World, Site #1, 2nd Floor, Sri Chakra building, 18th Main, HSR Layout Sec 3, Behind Saibaba temple, Bengaluru (HSR Layout), 560102, Karnataka, IN<br> <br> 
+      
+      Google Map: <a href="http://tinyurl.com/saltworld">http://tinyurl.com/saltworld</a>
+      
+      <p><b>Contact Us:</b><br> If you have any questions or need further assistance, please feel free to WhatsApp us at +91 76878 78793 / <a href="https://wame.pro/saltworld">https://wame.pro/saltworld</a> . Our team is here to ensure you have a seamless and enjoyable experience.</p>
+      
+      <p>We look forward to welcoming you to Salt World!</p>
+      
+      <p>Warm regards,<br> Your friendly team <br>Salt World<br>+91 76878 78793 / WhatsApp:<a href="https://wame.pro/saltworld"> https://wame.pro/saltworld</a> 
+        <br>
+      <a href="www.saltworld.in">www.saltworld.in</a></p>`
     const mail = {
       from: "appsdny@gmail.com",
       to: client.email,
-      subject: `🥺 Hi ${client.firstName}, your appointment has been canceled`,
-      text: `Booking ref: ${appointment._id}
-Appointment was scheduled for ${appointment.startDateTime} with Salt World
-                          
-Appointment details
-  ${appointment.title}
-                          
-Location
-  Salt World
-  Site #1, 2nd Floor, Sri Chakra building, 18th Main, HSR Layout Sec 3, Behind Saibaba temple, Bengaluru (HSR Layout), 560102, Karnataka, IN
-GPS: http://tinyurl.com/saltworld
-                          
-Cancellation / Reschedule policy
-  1. Reschedule is allowed 48 hours prior to the scheduled session, however under circumstances like high fever, monthly period cycle or any other health complications reschedule is still permitted before 3 hours of the scheduled session.
-  2. If the reschedule request is NOT received within the above-mentioned window, then it will be considered as session availed.
-  3. In case of cancellation due to unavoidable situations, if we receive the cancellation request before 3 hours of the scheduled session, we will provide the credit note, that can be availed within a year.
-  4. If the scheduled session is canceled, it cannot be provided back on the weekend / public holiday. It can be availed only on the weekdays.
-
-Important info
-  Please be available at the location 30 minutes prior to your appointment. Please know that delays in reaching the location will impact the duration of the session.
-
-For any assistance dial / WhatsApp: +91 7687878793`,
+      subject: `Your appointment at Salt World is cancelled!`,
+      html:message,
     };
     transporter.sendMail(mail, function (error, info) {
       if (error) {
         console.log(error);
+        
       } else {
         console.log("Email sent: " + info.response);
       }
