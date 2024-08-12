@@ -40,6 +40,7 @@ import clientAppointmentsRouter from "./routes/clientAppointments.js";
 import notesRouter from "./routes/clientNotes.js";
 import clientMembershipRouter from "./routes/clientMemberships.js";
 import emaillogRouter from "./routes/emailLogs.js";
+import testRouter from "./routes/testAPI.js";
 
 app.use("/api/user", userRouter);
 app.use("/api/branches", branchOfficeRouter);
@@ -51,6 +52,7 @@ app.use("/api/appointments", clientAppointmentsRouter);
 app.use("/api/notes", notesRouter);
 app.use("/api/client_memberships", clientMembershipRouter);
 app.use("/api/emailLogs",emaillogRouter);
+app.use("/api/testAPI",testRouter);
 
 app.get("/s3url/:name", async (req, res) => {
   const imagename = req.params.name;
