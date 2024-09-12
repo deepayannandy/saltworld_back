@@ -252,7 +252,7 @@ router.get("/client/:clientId", verifyToken, async (req, res) => {
       const date = format(appointment.startDateTime, "dd-MMM-yyyy");
       const startTime = format(appointment.startDateTime, "hh:mm a");
       const endTime = format(appointment.endDateTime, "hh:mm a");
-      const ismembership = appointment.membershipId.length>0?"Yes":"No";
+      const ismembership = appointment.membershipId?"Yes":"No";
       const status =
        appointment.isCancelled==true?"Cancelled": new Date() < appointment.startDateTime
           ? "Upcoming"
@@ -271,6 +271,7 @@ router.get("/client/:clientId", verifyToken, async (req, res) => {
     });
     res.send(appointmentsData);
   } catch (e) {
+    console.log(e)
     res.status(404).send({ message: "Something went wrong" });
   }
 });
