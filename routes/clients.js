@@ -133,7 +133,7 @@ router.get("/search/:para", async (req, res) => {
 //get all clients
 router.get("/", async (_, res) => {
   try {
-    const clients = await Client.find().limit(10);
+    const clients = await Client.find();
     res.json(clients);
   } catch (error) {
     res.status(500).json({ message: error.message });
