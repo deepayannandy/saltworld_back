@@ -233,8 +233,10 @@ router.get("/by-appointment/:appointmentId", verifyToken, async (req, res) => {
       if(!appointmentData) return res.status(404).json({ message: "Appointment data not found!" });
       const client= await Client.findById(appointmentData.userId)
       const serviceName= appointmentData.serviceId!="historical Data"? await Service.findById(appointmentData.serviceId):"Historical Data"
-      let userData= await userModel.findById(appointmentData.cancelledBy)
-      if(userData) appointmentData.cancelledBy= `${userData.firstName} ${userData.lastName} `
+      if(appointmentData.isCancelled){ 
+        let userData= await userModel.findById(appointmentData.cancelledBy)
+        if(userData) appointmentData.cancelledBy= `${userData.firstName} ${userData.lastName}`
+      }
       let finaldata={appointmentData,client,serviceName}
       return res.send(finaldata);
     }catch(error){
