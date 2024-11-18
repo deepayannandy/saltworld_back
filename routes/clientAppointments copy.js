@@ -8,10 +8,8 @@ import Membership from "../models/membershipsModel.js";
 import Service from "../models/servicesModel.js";
 import { clientAppointmentRescheduleValidator } from "../validators/clientAppointmentRescheduleValidator.js";
 import emailLogModel from "../models/emailLogModel.js";
-import appointmentModel from "../models/apointmentModel.js";
+
 import _ from "lodash";
-import moment from 'moment';
-import userModel from "../models/userModel.js";
 
 const router = Router();
 
@@ -31,9 +29,7 @@ router.post("/:clientId", verifyToken, async (req, res) => {
   if (req.tokendata.userType !== "Admin") {
     return res.status(500).json({ message: "Access Prohibited!" });
   }
-  const user= await userModel.findById(req.tokendata._id)
-  if(!user) return res.status(500).json({ message: "Access Prohibited!" });
-  const bookedBy= user.firstName;
+
   const { value, error } = clientAppointmentCreateValidator(
     req.body.appointmentData
   );
@@ -45,12 +41,31 @@ router.post("/:clientId", verifyToken, async (req, res) => {
   if (!client) {
     return res.status(404).json({ message: "Client Data not found!" });
   }
-  const userId=client._id
-  const startDateTime = new Date(value[0].startDateTime);
-  const startDate = format(startDateTime, "dd-MMM-yyyy");
-  const startTime = format(startDateTime, "HH : mm");
-  let services=""
-  let bookingIds=""
+
+  const clients = await Client.find();
+  for (const data of value) {
+    const startDateTime = new Date(data.startDateTime);
+
+    for (const client of clients) {
+      for (const appointment of client.appointments) {
+        if (
+          startDateTime >= appointment.startDateTime &&
+          startDateTime <= appointment.endDateTime && appointment.isCancelled==false
+        ) {
+          console.log(appointment)
+          return res.status(422).json({
+            message: `This slot between ${format(
+              appointment.startDateTime,
+              "dd-MMM-yy hh:mm a"
+            )} and ${format(
+              appointment.endDateTime,
+              "dd-MMM-yy hh:mm a"
+            )} is already booked. Please try another slot.`,
+          });
+        }
+      }
+    }
+  }
   for (const data of value) {
     const startDateTime = new Date(data.startDateTime);
     const endDateTime = addMinutes(startDateTime, data.duration);
@@ -68,7 +83,6 @@ router.post("/:clientId", verifyToken, async (req, res) => {
     const formattedStartDateTime = startDateTime.toString();
     const membershipName = membership ? ` (${membership.name})` : "";
     const title = `${service.name}${membershipName} for ${client.firstName} ${client.lastName} at ${formattedStartDateTime}`;
-    services=services+`${service.name}, `
     const isCancelled=false;
     for(let memberC in client.clientMemberships){
       if(client.clientMemberships[memberC]._id.equals(data.membershipId)){
@@ -81,27 +95,25 @@ router.post("/:clientId", verifyToken, async (req, res) => {
         break
       }
     }
-    let newAppointment = new appointmentModel({
+    client.appointments.push({
       ...data,
       isCancelled,
       title,
       resource,
       rescheduleCount,
       endDateTime,
-      bookedBy,userId
-    })
-
-
+    });
 
     try {
-      let appointment = await newAppointment.save();
-      bookingIds=bookingIds+" "+appointment._id
-    } catch (error) {
-      return res.status(400).json({ message: error.message });
-    }
-  }
-  try{
-    const message=`<p><b>Dear ${client.firstName},</b></p>
+      client = await client.save();
+
+      const latestClientAppointment = client.appointments.find(
+        (appointment) => appointment.title === title
+      );
+
+      const startDate = format(startDateTime, "dd-MMM-yyyy");
+      const startTime = format(startDateTime, "HH : mm");
+      const message=`<p><b>Dear ${client.firstName},</b></p>
 
       <p>Thank you for choosing Salt World for your wellness needs! We are delighted to confirm your booking and look forward to providing you with an exceptional rejuvenating and relaxing experience.</p>
       
@@ -109,7 +121,7 @@ router.post("/:clientId", verifyToken, async (req, res) => {
       <b>Name:</b> ${client.firstName} ${client.lastName} <br> 
       <b>Date:</b> ${startDate} <br> 
       <b>Time:</b> ${startTime} <br> 
-      <b>Service(s):</b>  ${services} <br> 
+      <b>Service(s):</b>  ${service.name} <br> 
       <b>Location:</b> Salt World, Site #1, 2nd Floor, Sri Chakra building, 18th Main, HSR Layout Sec 3, Behind Saibaba temple, Bengaluru (HSR Layout), 560102, Karnataka, IN<br> <br> 
       
       Google Map: <a href="http://tinyurl.com/saltworld">http://tinyurl.com/saltworld</a>
@@ -148,7 +160,7 @@ router.post("/:clientId", verifyToken, async (req, res) => {
       const emailCom= new emailLogModel({
         userId: client._id,
         userEmail: client.email,
-        bookingId: bookingIds,
+        bookingId: latestClientAppointment._id,
         emailBody: message,
         emailType: "New Appointment",
         timeStamp: new Date(),
@@ -156,8 +168,9 @@ router.post("/:clientId", verifyToken, async (req, res) => {
       })
       let communication = await emailCom.save();
 
-  }catch(error){
-    return res.status(400).json({ message: error.message });
+    } catch (error) {
+      return res.status(400).json({ message: error.message });
+    }
   }
 
   return res.status(201).json({ message: "Appointments added successfully" });
@@ -222,128 +235,135 @@ router.get("/:id", verifyToken, async (req, res) => {
 
   res.send(appointment);
 });
-// get a appointments by Client Id
-router.get("/by-appointment/:appointmentId", verifyToken, async (req, res) => {
-  if (req.tokendata.userType !== "Admin") {
-    return res.status(403).json({ message: "Access Prohibited!" });
-  }
-    try{
-      console.log(req.params.appointmentId)
-      const appointmentData= await appointmentModel.findById(req.params.appointmentId);
-      if(!appointmentData) return res.status(404).json({ message: "Appointment data not found!" });
-      const client= await Client.findById(appointmentData.userId)
-      const serviceName= appointmentData.serviceId!="historical Data"? await Service.findById(appointmentData.serviceId):"Historical Data"
-      let userData= await userModel.findById(appointmentData.cancelledBy)
-      if(userData) appointmentData.cancelledBy= `${userData.firstName} ${userData.lastName} `
-      let finaldata={appointmentData,client,serviceName}
-      return res.send(finaldata);
-    }catch(error){
-      res.status(500).json({ message: error.message });
-    }
-});
 
-// get a appointments by Client Id
+//get a appointments by Client Id
 router.get("/client/:clientId", verifyToken, async (req, res) => {
-  try{
-    const appointmentData= await appointmentModel.find({userId:req.params.clientId})
-    let formattedAppointments=[];
-    for(let index in  appointmentData){
-      const date = format(appointmentData[index].startDateTime, "dd-MMM-yyyy");
-      const startTime = format(appointmentData[index].startDateTime, "hh:mm a");
-      const endTime = format(appointmentData[index].endDateTime, "hh:mm a");
-      const ismembership = appointmentData[index].membershipId?"Yes":"No";
+  if (req.tokendata.userType !== "Admin") {
+    return res.status(500).json({ message: "Access Prohibited!" });
+  }
+
+  const client = await Client.findById(req.params.clientId);
+  if (!client) {
+    return res.status(404).json({ message: "Client Data not found!" });
+  }
+
+  try {
+    const appointmentsData = client.appointments.map((appointment) => {
+      const date = format(appointment.startDateTime, "dd-MMM-yyyy");
+      const startTime = format(appointment.startDateTime, "hh:mm a");
+      const endTime = format(appointment.endDateTime, "hh:mm a");
+      const ismembership = appointment.membershipId?"Yes":"No";
       const status =
-      appointmentData[index].isCancelled==true?"Cancelled": new Date() < appointmentData[index].startDateTime
+       appointment.isCancelled==true?"Cancelled": new Date() < appointment.startDateTime
           ? "Upcoming"
-          : new Date() > appointmentData[index].endDateTime
+          : new Date() > appointment.endDateTime
           ? "Completed"
           : "Live";
-      formattedAppointments.push(Object.assign({}, appointmentData[index]?.toObject(), {
+
+      return Object.assign({}, appointment?.toObject(), {
+        clientId: client.id,
         date,
         startTime,
         endTime,
         status,
         ismembership
-      }))
-    }
-    res.json(formattedAppointments);
-} catch (error) {
-  res.status(500).json({ message: error.message });
-}
+      });
+    });
+    res.send(appointmentsData);
+  } catch (e) {
+    console.log(e)
+    res.status(404).send({ message: "Something went wrong" });
+  }
 });
 
 //get all appointments
-// router.get("/", verifyToken, async (req, res) => {
- 
-// });
+router.get("/", verifyToken, async (req, res) => {
+  if (req.tokendata.userType !== "Admin") {
+    return res.status(500).json({ message: "Access Prohibited!" });
+  }
+
+  try {
+    const clients = await Client.find();
+
+    let allAppointments = [];
+    for (const client of clients) {
+      const appointments = client.appointments.map((appointment) => {
+        appointment = appointment?.toObject();
+        appointment["clientId"] = client.id;
+        return appointment;
+      }).filter((appointment)=> {return !appointment.isCancelled});
+
+      allAppointments = allAppointments.concat(appointments);
+    }
+
+    res.json(allAppointments);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 //get all appointments
-// router.get("/byday/:date", verifyToken, async (req, res) => {
+router.get("/byday/:date", verifyToken, async (req, res) => {
+  if (req.tokendata.userType !== "Admin") {
+    return res.status(500).json({ message: "Access Prohibited!" });
+  }
+  console.log(req.params.date)
+  try {
+    const clients = await Client.find();
+    let allAppointments = [];
+    for (const client of clients) {
+      const appointments = client.appointments.map((appointment) => {
+        appointment = appointment?.toObject();
+        appointment["clientId"] = client.id;
+       return appointment;
+      }).filter((appointment)=>appointment.startDateTime.toLocaleDateString().replaceAll("/","-")===req.params.date && !appointment.isCancelled );
+      allAppointments = allAppointments.concat(appointments);
+    }
+    res.json(allAppointments);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
-// });
-
-// get all appointments
-// router.get("/existing/:time&:serviceId&:duration",
-//   verifyToken,
-//   async (req, res) => {
-//     if (req.tokendata.userType !== "Admin") {
-//       return res.status(400).json({ message: "Access Prohibited!" });
-//     }
-//     const startDateTime = new Date(req.params.time);
-//     const endDateTime = addMinutes(startDateTime, req.params.duration);
-
-//     try {
-//       const clients = await Client.find();
-
-//       let allAppointments = [];
-//       for (const client of clients) {
-//         const appointments = client.appointments.filter((appointment) => {
-//           appointment.clientId = client.id;
-
-//           if (
-//             appointment.startDateTime >= startDateTime &&
-//             appointment.startDateTime <= endDateTime &&
-//             appointment.serviceId === req.params.serviceId
-//           ) {
-//             return true;
-//           }
-//           return false;
-//         });
-
-//         allAppointments = allAppointments.concat(appointments);
-//       }
-
-//       res.json(allAppointments);
-//     } catch (error) {
-//       res.status(500).json({ message: error.message });
-//     }
-//   }
-// );
-
-router.get("/searchbyview/:starttime&:endtime",
+//get all appointments
+router.get(
+  "/existing/:time&:serviceId&:duration",
   verifyToken,
   async (req, res) => {
     if (req.tokendata.userType !== "Admin") {
       return res.status(400).json({ message: "Access Prohibited!" });
     }
-    let startDate= moment(`${req.params.starttime} 00:00:00`, 'DD-MM-YYYY HH:mm:ss').toDate()
-    let endDate= moment(`${req.params.endtime} 23:59:00`, 'DD-MM-YYYY HH:mm:ss').toDate()
-    
-    console.log(startDate,endDate)
+    const startDateTime = new Date(req.params.time);
+    const endDateTime = addMinutes(startDateTime, req.params.duration);
 
-    try{  
-      const appointmentData= await appointmentModel.find({$and:
-        [{startDateTime:{
-           $gt: startDate,
-           $lt: endDate
-       }},{
-           isCancelled:false
-       }]})
-      res.json(appointmentData);
+    try {
+      const clients = await Client.find();
+
+      let allAppointments = [];
+      for (const client of clients) {
+        const appointments = client.appointments.filter((appointment) => {
+          appointment.clientId = client.id;
+
+          if (
+            appointment.startDateTime >= startDateTime &&
+            appointment.startDateTime <= endDateTime &&
+            appointment.serviceId === req.params.serviceId
+          ) {
+            return true;
+          }
+          return false;
+        });
+
+        allAppointments = allAppointments.concat(appointments);
+      }
+
+      res.json(allAppointments);
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
-  })
+  }
+);
+
 router.get(
   "/searchbydate/:starttime&:endtime&:branch",
   verifyToken,
@@ -354,19 +374,28 @@ router.get(
 
     const startDateTime = new Date(req.params.starttime);
     const endDateTime = new Date(req.params.endtime);
-    startDateTime.setHours(0,0,0)
-    endDateTime.setHours(23,59,59)
-    console.log(startDateTime,endDateTime)
     try {
-      const appointmentData= await appointmentModel.find({$and:
-        [{startDateTime:{
-           $gt: startDateTime,
-           $lt: endDateTime
-       }},{
-        branch:req.params.branch
-       }]
-   })
-      res.json(appointmentData);
+      const clients = await Client.find();
+
+      let allAppointments = [];
+      for (const client of clients) {
+        const appointments = client.appointments.filter((appointment) => {
+          appointment.clientId = client.id;
+
+          if (
+            appointment.startDateTime >= startDateTime &&
+            appointment.startDateTime <= endDateTime &&
+            appointment.branch === req.params.branch
+          ) {
+            return true;
+          }
+          return false;
+        });
+
+        allAppointments = allAppointments.concat(appointments);
+      }
+
+      res.json(allAppointments);
     } catch (error) {
       res.status(500).json({ message: error.message });
     }
@@ -383,7 +412,14 @@ router.patch("/:id", verifyToken, async (req, res) => {
   if (!client) {
     return res.status(404).json({ message: "Client Data not found!" });
   }
-  const appointment= await appointmentModel.findById(req.params.id)
+
+  if (!client.appointments?.length) {
+    return res.status(404).json({ message: "Client appointments not found" });
+  }
+
+  const appointment = client.appointments.find(
+    (appointment) => appointment._id.toString() === req.params.id
+  );
   if (!appointment) {
     return res.status(404).json({ message: "Client appointment not found" });
   }
@@ -397,14 +433,44 @@ router.patch("/:id", verifyToken, async (req, res) => {
   const endDateTime = addMinutes(startDateTime, service.duration);
 
   const clients = await Client.find();
+  for (const client of clients) {
+    for (const appointmentData of client.appointments) {
+      if (
+        startDateTime >= appointmentData.startDateTime &&
+        startDateTime <= appointmentData.endDateTime &&
+        String(appointmentData._id) !== String(appointment._id) && appointmentData.isCancelled==false
+      ) {
+        console.log(appointment)
+        return res.status(422).json({
+          message: `This slot between ${format(
+            appointmentData.startDateTime,
+            "dd-MMM-yy hh:mm a"
+          )} and ${format(
+            appointmentData.endDateTime,
+            "dd-MMM-yy hh:mm a"
+          )} is already booked. Please try another slot.`,
+        });
+      }
+    }
+  }
   const formattedStartDateTime = startDateTime.toString();
   const title = `${service.name} for ${client.firstName} ${client.lastName} at ${formattedStartDateTime}`;
-  appointment.endDateTime= endDateTime
-  appointment.startDateTime=startDateTime
-  appointment.rescheduleCount= rescheduleCount
-  appointment.personCount= req.body.personCount
+  client.appointments = client.appointments.map((appointment) => {
+    if (appointment._id.toString() === req.params.id) {
+      appointment = Object.assign({}, appointment, {
+        ..._.omit(value, "clientId","membershipId"),
+        endDateTime,
+        resource,
+        rescheduleCount,
+        title,
+      });
+    }
+
+    return appointment;
+  });
+
   try {
-    await appointment.save();
+    await client.save();
     const startDate = format(startDateTime, "dd-MMM-yyyy");
     const startTime = format(startDateTime, "HH : mm");
       const message=`<p><b>Dear ${client.firstName},</b></p>
@@ -476,11 +542,28 @@ router.delete("/:id", verifyToken, async (req, res) => {
   if (!client) {
     return res.status(404).json({ message: "Client not found" });
   }
-  const appointment= await appointmentModel.findById(req.params.id)
+
+  if (!client.appointments?.length) {
+    return res.status(404).json({ message: "Client appointments not found" });
+  }
+
+  const appointment = client.appointments.find(
+    (appointment) => appointment._id.toString() === req.params.id
+  );
   if (!appointment) {
     return res.status(404).json({ message: "Client appointment not found" });
   }
-  if(appointment.membershipId? appointment.membershipId.length>0 :false){
+  let selectedAppointment;
+  client.appointments= client.appointments.map((appointment)=>{
+    if(appointment.id == req.params.id)
+      { 
+        selectedAppointment=appointment;
+        appointment.isCancelled=true;
+       return appointment} 
+       else{ return appointment} })
+
+
+  if(selectedAppointment.membershipId.length>0){
     console.log("This need to be reimbursed");
     client.clientMemberships=client.clientMemberships.map((membership)=>{
       if(membership._id.equals(selectedAppointment.membershipId)){
@@ -505,10 +588,6 @@ router.delete("/:id", verifyToken, async (req, res) => {
 
   try {
     await client.save();
-    appointment.isCancelled=true;
-    appointment.cancelledBy=req.tokendata._id;
-    appointment.cancelledOn=new Date();
-    appointment.save()
     const startDate = format(startDateTime, "dd-MMM-yyyy");
     const startTime = format(startDateTime, "HH : mm");
     const service = await Service.findById(appointment.serviceId);

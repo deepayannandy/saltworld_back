@@ -28,7 +28,8 @@ router.post("/", verifyToken, async (req, res) => {
   req.body.emailNotification = true;
   req.body.emailMarketingNotification = true;
   const { value } = clientCreateValidator(req.body);
-  const client = new Client(value);
+  const onBoardingDate= new Date();
+  const client = new Client({...value,onBoardingDate});
 
   try {
     const newClientData = await client.save();
@@ -95,6 +96,7 @@ router.get("/:id", async (req, res) => {
   if (!client) {
     return res.status(404).json({ message: "Client Data not found!" });
   }
+  //todo fetch all appointment of the client 
   return res.status(200).json(client);
 });
 

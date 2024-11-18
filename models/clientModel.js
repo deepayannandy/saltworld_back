@@ -85,6 +85,10 @@ const clientSchema = new Schema({
     type: String,
     required: true,
   },
+  onBoardingDate: {
+    type: Date,
+    required: true,
+  },
   clientMemberships: [
     {
       name: {
@@ -227,6 +231,18 @@ const clientSchema = new Schema({
       rescheduleCount: {
         type: Number,
         required: true,
+      },
+      bookedBy: {
+        type: String,
+        required: true,
+      },
+      cancelledBy: {
+        type: String,
+        required: false,
+      },
+      cancelledOn: {
+        type: Date,
+        required: false,
       },
       startDateTime: {
         type: Date,

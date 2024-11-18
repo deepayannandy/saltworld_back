@@ -17,7 +17,7 @@ export const clientUpdateValidator = (data) => {
       .disallow("_", "-", " ")
       .allow(""),
     mobileNumber: joi.string().min(10).max(13),
-    alternate_mobileNumber: joi.string().min(0).max(13),
+    alternate_mobileNumber: joi.string().optional().allow("").max(13),
     email: joi.string().email(),
     alternate_email: joi.string(),
     gender: joi.string().optional().allow(""),
