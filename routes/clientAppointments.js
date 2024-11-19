@@ -18,7 +18,7 @@ const router = Router();
 const transporter = createTransport({
   service: "gmail",
   auth: {
-    user: "appsdny@gmail.com",
+    user: "saltworld.acc@gmail.com",
     pass: process.env.MAILER_PASS,
   },
   port: 465,
@@ -131,7 +131,7 @@ router.post("/:clientId", verifyToken, async (req, res) => {
       <a href="www.saltworld.in">www.saltworld.in</a></p>`
 
       const mail = {
-        from: "appsdny@gmail.com",
+        from: "saltworld.acc@gmail.com",
         to: client.email,
         subject: `Your appointment at Salt World is confirmed! `,
         html:message,
@@ -438,7 +438,7 @@ router.patch("/:id", verifyToken, async (req, res) => {
         <br>
       <a href="www.saltworld.in">www.saltworld.in</a></p>`
     const mail = {
-      from: "appsdny@gmail.com",
+      from: "saltworld.acc@gmail.com",
       to: client.email,
       subject: `Your appointment at Salt World is rescheduled! `,
       html:message,
@@ -533,7 +533,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
         <br>
       <a href="www.saltworld.in">www.saltworld.in</a></p>`
     const mail = {
-      from: "appsdny@gmail.com",
+      from: "saltworld.acc@gmail.com",
       to: client.email,
       subject: `Your appointment at Salt World is cancelled!`,
       html:message,

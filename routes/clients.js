@@ -12,7 +12,7 @@ const router = Router();
 const transporter = createTransport({
   service: "gmail",
   auth: {
-    user: "appsdny@gmail.com",
+    user: "saltworld.acc@gmail.com",
     pass: process.env.MAILER_PASS,
   },
   port: 465,
@@ -35,7 +35,7 @@ router.post("/", verifyToken, async (req, res) => {
     const newClientData = await client.save();
 
     const mail = {
-      from: "appsdny@gmail.com",
+      from: "saltworld.acc@gmail.com",
       to: value.email,
       subject: `👋 Welcome to Salt World Family ${value.firstName}`,
       text: `Hi ${value.firstName},

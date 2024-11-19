@@ -8,7 +8,7 @@ const transporter = createTransport({
     secure:true,
     auth: {
         type: "login", 
-      user: "appsdny@gmail.com",
+      user: "saltworld.acc@gmail.com",
       pass: process.env.MAILER_PASS,
     },
     port: 465,
@@ -61,7 +61,7 @@ Google Map: <a href="http://tinyurl.com/saltworld">http://tinyurl.com/saltworld<
 	<br>
 <a href="www.saltworld.in">www.saltworld.in</a></p>`
     const mail = {
-        from: "appsdny@gmail.com",
+        from: "saltworld.acc@gmail.com",
         to: req.params.email,
         subject: `Your appointment at Salt World is confirmed! `,
         html: message,

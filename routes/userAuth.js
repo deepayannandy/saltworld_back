@@ -18,7 +18,7 @@ const router = Router();
 const transporter = createTransport({
   service: "gmail",
   auth: {
-    user: "appsdny@gmail.com",
+    user: "saltworld.acc@gmail.com",
     pass: process.env.MAILER_PASS,
   },
   port: 465,
@@ -89,7 +89,7 @@ router.post("/register", async (req, res) => {
   try {
     const newUser = await user.save();
     const regestereduserMail = {
-      from: "appsdny@gmail.com",
+      from: "saltworld.acc@gmail.com",
       to: req.body.email,
       subject: "Welcome to Salt World",
       text: `Hi ${req.body.firstName},
