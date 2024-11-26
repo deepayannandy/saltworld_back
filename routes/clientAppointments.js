@@ -17,7 +17,37 @@ const {OAuth2} = google.auth
 
 
 const router = Router();
-
+const attendees=[
+  {   "id": '0',
+      "email": "saltworld.acc@gmail.com",
+      "displayName": "Salt World",
+      "organizer": true,
+  }, 
+  {
+  "id": '1',
+  "email": 'dnyindia@gmail.com',
+  "displayName": 'DNYIndia',
+  "organizer": false,
+}, 
+{
+  "id": '2',
+  "email": 'nrajesh.cts@gmail.com',
+  "displayName": 'Rajesh',
+  "organizer": false,
+}, 
+{
+  "id": '3',
+  "email": 'babu.deepthi@gmail.com',
+  "displayName": 'Deepthi Babu',
+  "organizer": false,
+}, 
+{
+  "id": '4',
+  "email": 'admin@sw.in',
+  "displayName": 'SW Reception',
+  "organizer": false,
+}, 
+]
 const transporter = createTransport({
   service: "gmail",
   auth: {
@@ -58,25 +88,7 @@ function createCalenderEvent(newAppointment, service, client){
         "displayName": "Salt World",
         "self": true
         },
-        attendees:[
-            {
-                "id": '0',
-                "email": "saltworld.acc@gmail.com",
-                "displayName": "Salt World",
-                "organizer": true,
-            }, 
-            {
-            "id": '1',
-            "email": 'dnyindia@gmail.com',
-            "displayName": 'DNYIndia',
-            "organizer": false,
-        }, {
-            "id": '2',
-            "email": 'deepayan.622@gmail.com',
-            "displayName": 'Deepayan Nandy',
-            "organizer": false,
-        }
-        ],
+        attendees:attendees,
         colorId:1
     }
     console.log(process.env.calender_refreshToken)
