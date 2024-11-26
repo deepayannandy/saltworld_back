@@ -12,6 +12,9 @@ import appointmentModel from "../models/apointmentModel.js";
 import _ from "lodash";
 import moment from 'moment';
 import userModel from "../models/userModel.js";
+import { google } from "googleapis";
+const {OAuth2} = google.auth
+
 
 const router = Router();
 
@@ -26,6 +29,62 @@ const transporter = createTransport({
 });
 
 process.env.TZ = "Asia/Calcutta";
+ 
+function createCalenderEvent(newAppointment, service, client){
+  const oAuth2Client = new OAuth2(process.env.calender_clientId,process.env.calender_token)
+      oAuth2Client.setCredentials({refresh_token:process.env.calender_refreshToken})
+      const calender= google.calendar({version:'v3', auth:oAuth2Client})
+      const event= {
+        summary:newAppointment.title,
+        location:"Salt World, Site #1, 2nd Floor, Sri Chakra building, 18th Main, HSR Layout Sec 3, Behind Saibaba temple, Bengaluru (HSR Layout), 560102, Karnataka, IN",
+        description:`<p><b>Booking Details: </b></p>
+      <b>Name:</b> ${client.firstName} ${client.lastName} <br> 
+      <b>Start Date:</b> ${newAppointment.startDateTime} <br> 
+      <b>End Date:</b> ${newAppointment.endDateTime} <br> 
+      <b>Service(s):</b> ${service.name} <br> `,
+        start:{
+            dateTime:newAppointment.startDateTime,
+            timeZone:"Asia/Kolkata"
+    
+        },
+        end:{
+            dateTime:newAppointment.endDateTime,
+            timeZone:"Asia/Kolkata"
+            
+        },
+        creator: {
+        "id": "salt",
+        "email": "saltworld.acc@gmail.com",
+        "displayName": "Salt World",
+        "self": true
+        },
+        attendees:[
+            {
+                "id": '0',
+                "email": "saltworld.acc@gmail.com",
+                "displayName": "Salt World",
+                "organizer": true,
+            }, 
+            {
+            "id": '1',
+            "email": 'dnyindia@gmail.com',
+            "displayName": 'DNYIndia',
+            "organizer": false,
+        }, {
+            "id": '2',
+            "email": 'deepayan.622@gmail.com',
+            "displayName": 'Deepayan Nandy',
+            "organizer": false,
+        }
+        ],
+        colorId:1
+    }
+    console.log(process.env.calender_refreshToken)
+    calender.events.insert({calendarId:"primary",resource:event},(error)=>{
+      if(error) return console.error("Something went wrong! ", error)
+          return console.log('Calender event created!')
+    })
+}
 
 router.post("/:clientId", verifyToken, async (req, res) => {
   if (req.tokendata.userType !== "Admin") {
@@ -95,6 +154,7 @@ router.post("/:clientId", verifyToken, async (req, res) => {
 
     try {
       let appointment = await newAppointment.save();
+      createCalenderEvent(newAppointment, service,client)
       bookingIds=bookingIds+" "+appointment._id
     } catch (error) {
       return res.status(400).json({ message: error.message });
@@ -111,7 +171,7 @@ router.post("/:clientId", verifyToken, async (req, res) => {
       <b>Time:</b> ${startTime} <br> 
       <b>Service(s):</b>  ${services} <br> 
       <b>Location:</b> Salt World, Site #1, 2nd Floor, Sri Chakra building, 18th Main, HSR Layout Sec 3, Behind Saibaba temple, Bengaluru (HSR Layout), 560102, Karnataka, IN<br> <br> 
-      
+      <b>booking ref:</b>  ${ bookingIds.substring(bookingIds.length - 8)} <br> 
       Google Map: <a href="http://tinyurl.com/saltworld">http://tinyurl.com/saltworld</a>
       
       <h4><p>Important Information:</p></h4>

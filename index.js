@@ -2,25 +2,12 @@ import dotenv from "dotenv";
 import cors from "cors";
 import express, { json } from "express";
 import mongoose from "mongoose";
-import aws_sdk from "aws-sdk";
 
 const app = express();
-const { S3 } = aws_sdk;
 const { connect, connection } = mongoose;
 dotenv.config();
 
 process.env.TZ = "Asia/Calcutta";
-const region = process.env.region;
-const bucketName = process.env.bucketName;
-const accessKeyId = process.env.accessKeyId;
-const secretAccessKey = process.env.secretAccessKey;
-
-const s3 = new S3({
-  region,
-  accessKeyId,
-  secretAccessKey,
-  signatureVersion: "v4",
-});
 
 connect(process.env.DATABASE_URL);
 const db = connection;
@@ -56,17 +43,6 @@ app.use("/api/emailLogs",emaillogRouter);
 app.use("/api/testAPI",testRouter);
 app.use("/api/dashboard",dashboardRouter);
 
-app.get("/s3url/:name", async (req, res) => {
-  const imagename = req.params.name;
-
-  const params = {
-    Bucket: bucketName,
-    Key: imagename,
-    Expires: 60,
-  };
-  const uploadUrl = await s3.getSignedUrlPromise("putObject", params);
-  res.send({ uploadUrl });
-});
 
 app.listen(6622, () => {
   console.log("Http Server is listening!");
