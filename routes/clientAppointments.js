@@ -23,30 +23,6 @@ const attendees=[
       "displayName": "Salt World",
       "organizer": true,
   }, 
-  {
-  "id": '1',
-  "email": 'dnyindia@gmail.com',
-  "displayName": 'DNYIndia',
-  "organizer": false,
-}, 
-{
-  "id": '2',
-  "email": 'nrajesh.cts@gmail.com',
-  "displayName": 'Rajesh',
-  "organizer": false,
-}, 
-{
-  "id": '3',
-  "email": 'babu.deepthi@gmail.com',
-  "displayName": 'Deepthi Babu',
-  "organizer": false,
-}, 
-{
-  "id": '4',
-  "email": 'admin@sw.in',
-  "displayName": 'SW Reception',
-  "organizer": false,
-}, 
 ]
 const transporter = createTransport({
   service: "gmail",
@@ -64,14 +40,17 @@ function createCalenderEvent(newAppointment, service, client){
   const oAuth2Client = new OAuth2(process.env.calender_clientId,process.env.calender_token)
       oAuth2Client.setCredentials({refresh_token:process.env.calender_refreshToken})
       const calender= google.calendar({version:'v3', auth:oAuth2Client})
+      console.log(newAppointment._id.toString())
       const event= {
+        id:newAppointment._id.toString(),
         summary:newAppointment.title,
         location:"Salt World, Site #1, 2nd Floor, Sri Chakra building, 18th Main, HSR Layout Sec 3, Behind Saibaba temple, Bengaluru (HSR Layout), 560102, Karnataka, IN",
         description:`<p><b>Booking Details: </b></p>
       <b>Name:</b> ${client.firstName} ${client.lastName} <br> 
       <b>Start Date:</b> ${newAppointment.startDateTime} <br> 
       <b>End Date:</b> ${newAppointment.endDateTime} <br> 
-      <b>Service(s):</b> ${service.name} <br> `,
+      <b>Service(s):</b> ${service.name} <br> 
+      <b>Contact No:</b> ${client.mobileNumber} <br>`,
         start:{
             dateTime:newAppointment.startDateTime,
             timeZone:"Asia/Kolkata"
@@ -89,13 +68,46 @@ function createCalenderEvent(newAppointment, service, client){
         "self": true
         },
         attendees:attendees,
-        colorId:1
+        colorId:service.category=="Salt Cave"?2:service.category=="Float Tank"?1:service.category=="Sauna"?4:3,
     }
-    console.log(process.env.calender_refreshToken)
-    calender.events.insert({calendarId:"primary",resource:event},(error)=>{
+    calender.events.insert({calendarId:"primary",resource:event},(error,event)=>{
       if(error) return console.error("Something went wrong! ", error)
-          return console.log('Calender event created!')
+          return console.log('Calender event created!',event)
     })
+}
+function deleteCalenderEvent(Appointment){
+  const oAuth2Client = new OAuth2(process.env.calender_clientId,process.env.calender_token)
+  oAuth2Client.setCredentials({refresh_token:process.env.calender_refreshToken})
+  const calender= google.calendar({version:'v3', auth:oAuth2Client})
+  calender.events.delete({calendarId:"primary",eventId:Appointment._id.toString()},(error)=>{
+    if(error) return console.error("Something went wrong! ", error)
+        return console.log('Calender event deleted!')
+  })
+}
+function updateEvent(Appointment){
+  const oAuth2Client = new OAuth2(process.env.calender_clientId,process.env.calender_token)
+  oAuth2Client.setCredentials({refresh_token:process.env.calender_refreshToken})
+  const calender= google.calendar({version:'v3', auth:oAuth2Client})
+  calender.events.get({ calendarId: "primary", eventId: Appointment._id.toString() }, (error, event) => {
+      if (error) return console.error("Something went wrong! ", error)
+      console.log('Searching Completed!')
+      console.log(event.data)
+      event.data.summary=Appointment.title
+      event.data.start={
+        dateTime:Appointment.startDateTime,
+        timeZone:"Asia/Kolkata"
+    }
+      event.data.end={
+        dateTime:Appointment.endDateTime,
+        timeZone:"Asia/Kolkata"
+    },
+      console.log("New Data is ready")
+      console.log(event.data)
+  calender.events.update({calendarId:"primary",eventId:Appointment._id.toString(),resource:event.data},(error,event)=>{
+          if(error) return console.error("Something went wrong! ", error)
+              return console.log('Searching Completed',event)
+          })
+  })
 }
 
 router.post("/:clientId", verifyToken, async (req, res) => {
@@ -166,7 +178,7 @@ router.post("/:clientId", verifyToken, async (req, res) => {
 
     try {
       let appointment = await newAppointment.save();
-      createCalenderEvent(newAppointment, service,client)
+      createCalenderEvent(appointment, service,client)
       bookingIds=bookingIds+" "+appointment._id
     } catch (error) {
       return res.status(400).json({ message: error.message });
@@ -191,9 +203,7 @@ router.post("/:clientId", verifyToken, async (req, res) => {
       <p><b>Arrival:</b> Please arrive at least <b>30 minutes before your appointment time</b></p>
       
       <p>Kindly note that <b>perfumes / flowers / smelling substances should be avoided</b> while entering Salt World. This is because others can be allergic to certain smells.</p>
-      
-      <p>Please wear comfortable clothing while you are relaxing in Salt cave. Do not wear tight clothes that creates difficulty in breathing. Wet clothes are not allowed. So, in case of rains, please get an extra set of clothes.</p>
-      
+            
       <p><b>Contact Us:</b><br> If you have any questions or need further assistance, please feel free to WhatsApp us at +91 76878 78793 / <a href="https://wame.pro/saltworld">https://wame.pro/saltworld</a> . Our team is here to ensure you have a seamless and enjoyable experience.</p>
       
       <p>We look forward to welcoming you to Salt World!</p>
@@ -474,11 +484,12 @@ router.patch("/:id", verifyToken, async (req, res) => {
   const formattedStartDateTime = startDateTime.toString();
   const title = `${service.name} for ${client.firstName} ${client.lastName} at ${formattedStartDateTime}`;
   appointment.endDateTime= endDateTime
-  appointment.startDateTime=startDateTime
+  appointment.startDateTime= startDateTime
   appointment.rescheduleCount= rescheduleCount
   appointment.personCount= req.body.personCount
   try {
     await appointment.save();
+    updateEvent(appointment)
     const startDate = format(startDateTime, "dd-MMM-yyyy");
     const startTime = format(startDateTime, "HH : mm");
       const message=`<p><b>Dear ${client.firstName},</b></p>
@@ -499,9 +510,7 @@ router.patch("/:id", verifyToken, async (req, res) => {
       <p><b>Arrival:</b> Please arrive at least <b>30 minutes before your appointment time</b></p>
       
       <p>Kindly note that <b>perfumes / flowers / smelling substances should be avoided</b> while entering Salt World. This is because others can be allergic to certain smells.</p>
-      
-      <p>Please wear comfortable clothing while you are relaxing in Salt cave. Do not wear tight clothes that creates difficulty in breathing. Wet clothes are not allowed. So, in case of rains, please get an extra set of clothes.</p>
-      
+            
       <p><b>Contact Us:</b><br> If you have any questions or need further assistance, please feel free to WhatsApp us at +91 76878 78793 / <a href="https://wame.pro/saltworld">https://wame.pro/saltworld</a> . Our team is here to ensure you have a seamless and enjoyable experience.</p>
       
       <p>We look forward to welcoming you to Salt World!</p>
@@ -554,6 +563,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
   if (!appointment) {
     return res.status(404).json({ message: "Client appointment not found" });
   }
+  deleteCalenderEvent(appointment)
   if(appointment.membershipId? appointment.membershipId.length>0 :false){
     console.log("This need to be reimbursed");
     client.clientMemberships=client.clientMemberships.map((membership)=>{

@@ -88,18 +88,6 @@ async function getMemberships(req, res, next) {
     if (!membership) {
       return res.status(404).json({ message: "Membership not found!" });
     }
-
-    const services = [];
-    for (const serviceId of membership.serviceIds) {
-      const service = await Services.findOne({ _id: serviceId, active: true });
-      if (service) {
-        services.push(service?.toObject());
-      }
-    }
-
-    membership = Object.assign({}, membership?.toObject(), {
-      services
-    })
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
