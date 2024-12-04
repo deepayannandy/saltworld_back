@@ -567,9 +567,9 @@ router.delete("/:id", verifyToken, async (req, res) => {
   if(appointment.membershipId? appointment.membershipId.length>0 :false){
     console.log("This need to be reimbursed");
     client.clientMemberships=client.clientMemberships.map((membership)=>{
-      if(membership._id.equals(selectedAppointment.membershipId)){
+      if(membership._id.equals(appointment.membershipId)){
         let temp_services=membership.services.map((service)=>{
-          if(service._id.equals(selectedAppointment.serviceId))
+          if(service._id.equals(appointment.serviceId))
           {
             console.log(service.name)
             service.sessions=service.sessions+1
