@@ -337,7 +337,7 @@ router.get("/client/:clientId", verifyToken, async (req, res) => {
       const endTime = format(appointmentData[index].endDateTime, "hh:mm a");
       const ismembership = appointmentData[index].membershipId?"Yes":"No";
       const status =
-      appointmentData[index].isCancelled==true?"Cancelled": new Date() < appointmentData[index].startDateTime
+      appointmentData[index].isNoShow==true?"No Show":appointmentData[index].isCancelled==true?"Cancelled": new Date() < appointmentData[index].startDateTime
           ? "Upcoming"
           : new Date() > appointmentData[index].endDateTime
           ? "Completed"
@@ -618,7 +618,7 @@ router.delete("/noShow/:id", verifyToken, async (req, res) => {
     const mail = {
       from: "saltworld.acc@gmail.com",
       to: client.email,
-      subject: `Your appointment at Salt World is cancelled!`,
+      subject: `${client.firstName}, You missed your appointment at Salt World!`,
       html:message,
     };
     transporter.sendMail(mail, function (error, info) {
@@ -714,7 +714,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
     const mail = {
       from: "saltworld.acc@gmail.com",
       to: client.email,
-      subject: `${client.firstName}, You missed your appointment at Salt World!!`,
+      subject: `Your appointment at Salt World is cancelled!`,
       html:message,
     };
     transporter.sendMail(mail, function (error, info) {
