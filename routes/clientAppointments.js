@@ -714,7 +714,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
     const mail = {
       from: "saltworld.acc@gmail.com",
       to: client.email,
-      subject: `Your appointment at Salt World is cancelled!`,
+      subject: `${client.firstName}, You missed your appointment at Salt World!!`,
       html:message,
     };
     transporter.sendMail(mail, function (error, info) {
