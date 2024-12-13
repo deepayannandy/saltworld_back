@@ -24,11 +24,23 @@ const router = Router();
 router.get('/',async (req,res)=>{
     try{
         const emailLogs=(await EmailLog.find()).reverse
-        res.json(emailLogs)
+        return res.json(emailLogs)
     }catch(error){
         res.status(500).json({message: error.message})
     }
 })
+
+router.get('/:cid',async (req,res)=>{
+  try{
+      // console.log(req.params.cid)
+      const emailLogs=await EmailLog.find({userId:req.params.cid})
+      // console.log(await EmailLog.find({userId:req.params.cid}))
+      return res.json(emailLogs.reverse())
+  }catch(error){
+      res.status(500).json({message: error.message})
+  }
+})
+
 router.post('/:email',async (req,res)=>{
     const startDate = format(new Date(), "dd-MMM-yyyy");
     const startTime= format(new Date(), "HH:mm");
@@ -76,4 +88,5 @@ Google Map: <a href="http://tinyurl.com/saltworld">http://tinyurl.com/saltworld<
     res.status(200).json({message: `Sending to ${req.params.email}`})
 
 })
+
 export default router;
