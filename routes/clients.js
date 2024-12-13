@@ -28,6 +28,8 @@ router.post("/", verifyToken, async (req, res) => {
   req.body.emailNotification = true;
   req.body.emailMarketingNotification = true;
   const { value } = clientCreateValidator(req.body);
+  const findClient= await Client.findOne({mobileNumber:value.mobileNumber})
+  if(findClient) return res.status(500).json({ message: "Client already exist!" });
   const onBoardingDate= new Date();
   const client = new Client({...value,onBoardingDate});
 

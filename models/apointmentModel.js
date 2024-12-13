@@ -60,6 +60,10 @@ const appointmentSchema = new Schema({
   duration:{
     type: Number,
     required:true
+  },
+  isNoShow:{
+    type: Boolean,
+    required:false
   }
 });
 

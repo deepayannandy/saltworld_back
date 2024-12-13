@@ -150,7 +150,7 @@ router.post("/:clientId", verifyToken, async (req, res) => {
 
     const formattedStartDateTime = startDateTime.toString();
     const membershipName = membership ? ` (${membership.name})` : "";
-    const title = `${service.name}${membershipName} for ${client.firstName} ${client.lastName} at ${formattedStartDateTime}`;
+    const title = `${service.name}${membershipName} for ${client.firstName} ${client.lastName}`;
     services=services+`${service.name}, `
     const isCancelled=false;
     for(let memberC in client.clientMemberships){
@@ -544,6 +544,103 @@ router.patch("/:id", verifyToken, async (req, res) => {
     })
     let communication = await emailCom.save();
     res.status(201).json(appointment._id);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+//delete schedule
+router.delete("/noShow/:id", verifyToken, async (req, res) => {
+  if (req.tokendata.userType !== "Admin") {
+    return res.status(400).json({ message: "Access Prohibited!" });
+  }
+
+  const client = await Client.findById(req.body.clientId);
+  if (!client) {
+    return res.status(404).json({ message: "Client not found" });
+  }
+  const appointment= await appointmentModel.findById(req.params.id)
+  if (!appointment) {
+    return res.status(404).json({ message: "Client appointment not found" });
+  }
+  deleteCalenderEvent(appointment)
+  if(appointment.membershipId? appointment.membershipId.length>0 :false){
+    console.log("This need to be reimbursed");
+    client.clientMemberships=client.clientMemberships.map((membership)=>{
+      if(membership._id.equals(appointment.membershipId)){
+        let temp_services=membership.services.map((service)=>{
+          if(service._id.equals(appointment.serviceId))
+          {
+            console.log(service.name)
+            service.sessions=service.sessions+1
+            return service
+          }
+          return service
+        })
+        membership.services=temp_services;
+        console.log(membership);
+        return membership
+      }
+      return membership
+    })
+  }
+  
+  const startDateTime = new Date(appointment.startDateTime);
+
+  try {
+    await client.save();
+    appointment.isCancelled=true;
+    appointment.isNoShow=true;
+    appointment.cancelledBy=req.tokendata._id;
+    appointment.cancelledOn=new Date();
+    appointment.save()
+    const startDate = format(startDateTime, "dd-MMM-yyyy");
+    const startTime = format(startDateTime, "HH : mm");
+    const service = await Service.findById(appointment.serviceId);
+    const message=`<p><b>Dear ${client.firstName},</b></p>
+
+      <p>You missed your appointment. We look forward to host you soon</p>
+      
+      <p><b>Booking Details: </b></p>
+      <b>Name:</b> ${client.firstName} ${client.lastName} <br> 
+      <b>Date:</b> ${startDate} <br> 
+      <b>Time:</b> ${startTime} <br> 
+      <b>Service(s):</b>  ${service.name} <br> 
+      <b>Location:</b> Salt World, Site #1, 2nd Floor, Sri Chakra building, 18th Main, HSR Layout Sec 3, Behind Saibaba temple, Bengaluru (HSR Layout), 560102, Karnataka, IN<br> <br> 
+      
+      <p><b>Contact Us:</b><br> If you have any questions or need further assistance, please feel free to WhatsApp us at +91 76878 78793 / https://wame.pro/saltworld . Our team is here to ensure you have a seamless and enjoyable experience.</p>
+      
+      <p>We look forward to welcoming you to Salt World!</p>
+      
+      <p>Warm regards,<br> Your friendly team <br>Salt World<br>+91 76878 78793 / WhatsApp:<a href="https://wame.pro/saltworld"> https://wame.pro/saltworld</a> 
+        <br>
+      <a href="www.saltworld.in">www.saltworld.in</a></p>`
+    const mail = {
+      from: "saltworld.acc@gmail.com",
+      to: client.email,
+      subject: `Your appointment at Salt World is cancelled!`,
+      html:message,
+    };
+    transporter.sendMail(mail, function (error, info) {
+      if (error) {
+        console.log(error);
+
+      } else {
+        console.log("Email sent: " + info.response);
+       
+      }
+    });
+    const emailCom= new emailLogModel({
+      userId: client._id,
+      userEmail: client.email,
+      bookingId: appointment._id,
+      emailBody: message,
+      emailType: "No Show",
+      timeStamp: new Date(),
+      isSuccessfullySend:true,
+    })
+    let communication = await emailCom.save();
+    res.status(201).json({ message: "Appointment Updated successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
