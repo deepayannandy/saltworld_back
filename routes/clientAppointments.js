@@ -84,7 +84,7 @@ function deleteCalenderEvent(Appointment){
         return console.log('Calender event deleted!')
   })
 }
-function updateEvent(Appointment){
+function updateEvent(Appointment, service, client){
   const oAuth2Client = new OAuth2(process.env.calender_clientId,process.env.calender_token)
   oAuth2Client.setCredentials({refresh_token:process.env.calender_refreshToken})
   const calender= google.calendar({version:'v3', auth:oAuth2Client})
@@ -92,6 +92,12 @@ function updateEvent(Appointment){
       if (error) return console.error("Something went wrong! ", error)
       console.log('Searching Completed!')
       console.log(event.data)
+      event.data.description=`<p><b>Booking Details: </b></p>
+      <b>Name:</b> ${client.firstName} ${client.lastName} <br> 
+      <b>Start Date:</b> ${Appointment.startDateTime} <br> 
+      <b>End Date:</b> ${Appointment.endDateTime} <br> 
+      <b>Service(s):</b> ${service.name} <br> 
+      <b>Contact No:</b> ${client.mobileNumber} <br>`;
       event.data.summary=Appointment.title
       event.data.start={
         dateTime:Appointment.startDateTime,
@@ -489,7 +495,8 @@ router.patch("/:id", verifyToken, async (req, res) => {
   appointment.personCount= req.body.personCount
   try {
     await appointment.save();
-    updateEvent(appointment)
+    const service = await Service.findById(appointment.serviceId);
+    updateEvent(appointment,service,client)
     const startDate = format(startDateTime, "dd-MMM-yyyy");
     const startTime = format(startDateTime, "HH : mm");
       const message=`<p><b>Dear ${client.firstName},</b></p>
