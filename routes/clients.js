@@ -30,8 +30,8 @@ router.post("/", verifyToken, async (req, res) => {
   const { value } = clientCreateValidator(req.body);
   const findClient= await Client.findOne({mobileNumber:value.mobileNumber})
   if(findClient) return res.status(500).json({ message: "Client already exist!" });
-  const onBoardingDate= new Date();
-  const client = new Client({...value,onBoardingDate});
+  value.onBoardingDate= new Date(req.body.onBoardingDate);
+  const client = new Client({...value});
 
   try {
     const newClientData = await client.save();
@@ -83,6 +83,7 @@ router.patch("/:id", verifyToken, async (req, res) => {
   if (value.mobileNumber) {
     value.mobileNumber = Number(value.mobileNumber);
   }
+  value.onBoardingDate=new Date(req.body.onBoardingDate)
 
   try {
     const updatedClient = await Client.updateOne({ _id: client.id }, value);

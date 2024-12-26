@@ -75,6 +75,10 @@ function createCalenderEvent(newAppointment, service, client){
           return console.log('Calender event created!',event)
     })
 }
+function generateCCList(CC){
+  console.log("Keeping "+CC+" in CC")
+return CC.split(";")
+}
 function deleteCalenderEvent(Appointment){
   const oAuth2Client = new OAuth2(process.env.calender_clientId,process.env.calender_token)
   oAuth2Client.setCredentials({refresh_token:process.env.calender_refreshToken})
@@ -221,6 +225,7 @@ router.post("/:clientId", verifyToken, async (req, res) => {
       const mail = {
         from: "saltworld.acc@gmail.com",
         to: client.email,
+        cc:generateCCList(req.body.CC),
         subject: `Your appointment at Salt World is confirmed! `,
         html:message,
       };
@@ -528,6 +533,7 @@ router.patch("/:id", verifyToken, async (req, res) => {
     const mail = {
       from: "saltworld.acc@gmail.com",
       to: client.email,
+      cc:generateCCList(req.body.CC),
       subject: `Your appointment at Salt World is rescheduled! `,
       html:message,
     };
@@ -625,6 +631,7 @@ router.delete("/noShow/:id", verifyToken, async (req, res) => {
     const mail = {
       from: "saltworld.acc@gmail.com",
       to: client.email,
+      cc:generateCCList(req.body.CC),
       subject: `${client.firstName}, You missed your appointment at Salt World!`,
       html:message,
     };
@@ -721,6 +728,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
     const mail = {
       from: "saltworld.acc@gmail.com",
       to: client.email,
+      cc:generateCCList(req.body.CC),
       subject: `Your appointment at Salt World is cancelled!`,
       html:message,
     };
