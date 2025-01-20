@@ -95,12 +95,16 @@ router.patch("/:id", verifyToken, async (req, res) => {
 
 //get a clients
 router.get("/:id", async (req, res) => {
+  try{
   let client = await Client.findById(req.params.id);
   if (!client) {
     return res.status(404).json({ message: "Client Data not found!" });
   }
   //todo fetch all appointment of the client 
   return res.status(200).json(client);
+}catch(error){
+  return res.status(404).json({ message: "No data found" });
+}
 });
 
 router.delete("/:id", verifyToken, async (req, res) => {

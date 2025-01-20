@@ -76,8 +76,8 @@ function createCalenderEvent(newAppointment, service, client){
     })
 }
 function generateCCList(CC){
-  console.log("Keeping "+CC+" in CC")
-return CC.split(";")
+if(CC==null|| CC==undefined) return[]
+else return CC.split(";")
 }
 function deleteCalenderEvent(Appointment){
   const oAuth2Client = new OAuth2(process.env.calender_clientId,process.env.calender_token)
@@ -229,6 +229,7 @@ router.post("/:clientId", verifyToken, async (req, res) => {
         subject: `Your appointment at Salt World is confirmed! `,
         html:message,
       };
+      if(req.body.sendMail){
       transporter.sendMail(mail, function (error, info) {
         if (error) {
           console.log(error);
@@ -236,7 +237,8 @@ router.post("/:clientId", verifyToken, async (req, res) => {
           console.log("Email sent: " + info.response);
 
         }
-      });
+      }
+    );
       
       const emailCom= new emailLogModel({
         userId: client._id,
@@ -248,6 +250,7 @@ router.post("/:clientId", verifyToken, async (req, res) => {
         isSuccessfullySend:true
       })
       let communication = await emailCom.save();
+    }
 
   }catch(error){
     return res.status(400).json({ message: error.message });
@@ -537,7 +540,7 @@ router.patch("/:id", verifyToken, async (req, res) => {
       subject: `Your appointment at Salt World is rescheduled! `,
       html:message,
     };
-
+    if(req.body.sendMail){
     transporter.sendMail(mail, function (error, info) {
       if (error) {
         console.log(error);
@@ -556,13 +559,14 @@ router.patch("/:id", verifyToken, async (req, res) => {
       isSuccessfullySend:true
     })
     let communication = await emailCom.save();
+  }
     res.status(201).json(appointment._id);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-//delete schedule
+//No show
 router.delete("/noShow/:id", verifyToken, async (req, res) => {
   if (req.tokendata.userType !== "Admin") {
     return res.status(400).json({ message: "Access Prohibited!" });
@@ -635,6 +639,7 @@ router.delete("/noShow/:id", verifyToken, async (req, res) => {
       subject: `${client.firstName}, You missed your appointment at Salt World!`,
       html:message,
     };
+    if(req.body.sendMail){
     transporter.sendMail(mail, function (error, info) {
       if (error) {
         console.log(error);
@@ -654,6 +659,7 @@ router.delete("/noShow/:id", verifyToken, async (req, res) => {
       isSuccessfullySend:true,
     })
     let communication = await emailCom.save();
+  }
     res.status(201).json({ message: "Appointment Updated successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -732,6 +738,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
       subject: `Your appointment at Salt World is cancelled!`,
       html:message,
     };
+    if(req.body.sendMail){
     transporter.sendMail(mail, function (error, info) {
       if (error) {
         console.log(error);
@@ -751,6 +758,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
       isSuccessfullySend:true,
     })
     let communication = await emailCom.save();
+  }
     res.status(201).json({ message: "Appointment deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
