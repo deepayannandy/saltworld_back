@@ -229,7 +229,8 @@ router.post("/:clientId", verifyToken, async (req, res) => {
         subject: `Your appointment at Salt World is confirmed! `,
         html:message,
       };
-      if(req.body.sendMail){
+      console.log(">>>>> Mail flag: ",req.body.sendEmail);
+      if(req.body.sendEmail){
       transporter.sendMail(mail, function (error, info) {
         if (error) {
           console.log(error);
@@ -540,7 +541,8 @@ router.patch("/:id", verifyToken, async (req, res) => {
       subject: `Your appointment at Salt World is rescheduled! `,
       html:message,
     };
-    if(req.body.sendMail){
+
+    if(req.body.sendEmail){
     transporter.sendMail(mail, function (error, info) {
       if (error) {
         console.log(error);
@@ -639,7 +641,7 @@ router.delete("/noShow/:id", verifyToken, async (req, res) => {
       subject: `${client.firstName}, You missed your appointment at Salt World!`,
       html:message,
     };
-    if(req.body.sendMail){
+    if(req.body.sendEmail){
     transporter.sendMail(mail, function (error, info) {
       if (error) {
         console.log(error);
@@ -738,7 +740,7 @@ router.delete("/:id", verifyToken, async (req, res) => {
       subject: `Your appointment at Salt World is cancelled!`,
       html:message,
     };
-    if(req.body.sendMail){
+    if(req.body.sendEmail){
     transporter.sendMail(mail, function (error, info) {
       if (error) {
         console.log(error);
