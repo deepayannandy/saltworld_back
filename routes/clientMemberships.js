@@ -14,11 +14,16 @@ router.post("/:clientId", verifyToken, async (req, res) => {
     return res.status(500).json({ message: "Access Prohibited!" });
   }
   req.body.active = true;
-  const value  = await Membership.findById(req.body.membershipId);
-  console.log(value)
+  let value  = await Membership.findById(req.body.membershipId);
+  // console.log(value)
+  var services=[]
+  value.services.forEach((service) => {
+    service.totalSessions= service.sessions;
+    services.push(service)
+  });
+  console.log(">>>>>",services)
   const startDate = new Date(req.body.startDate);
   const endDate = new Date(req.body.endDate);
-  const test= "Deepayan";
   let client = await Client.findById(req.params.clientId);
   if (!client) {
     return res.status(404).json({ message: "Client Data not found!" });
@@ -26,7 +31,7 @@ router.post("/:clientId", verifyToken, async (req, res) => {
   try {
     client.clientMemberships.push(
     {name:value.name,
-    services: value.services,
+    services: services,
     description: value.description,
     sellingCost: value.sellingCost,
     taxRate: value.taxRate,
@@ -38,10 +43,10 @@ router.post("/:clientId", verifyToken, async (req, res) => {
     startDate,
     endDate}
   );
-    console.log(client);
-    console.log("I am called");
+    // console.log(client);
+    // console.log("I am called");
     client = await client.save();
-    console.log(client);
+    // console.log(client);
     res.status(201).json(client._id);
   } catch (error) {
     console.log(error)
@@ -50,11 +55,6 @@ router.post("/:clientId", verifyToken, async (req, res) => {
 });
 
 router.get("/:clientId&:isAll", verifyToken, async (req, res) => {
-  // if (req.tokendata.userType !== "Admin") {
-  //   return res.status(500).json({ message: "Access Prohibited!" });
-  // }
-  
-
   try {
     console.log(req.params.clientId)
     const client = await Client.findById(req.params.clientId);
@@ -71,7 +71,26 @@ router.get("/:clientId&:isAll", verifyToken, async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
-
+router.patch("/:clientId&:subsId",verifyToken, async (req, res) => {
+  try {
+    console.log(req.body.updatedServiceList)
+    const client = await Client.findById(req.params.clientId);
+    if (!client) {
+      return res.status(404).json({ message: "Client Data not found!" });
+    }
+    client.clientMemberships.map((membership)=> {
+      if(membership._id==req.params.subsId){
+        membership.services=req.body.updatedServiceList;
+        return membership;
+      }
+      return membership;
+    })
+    await client.save();
+    return res.status(200).json({"message":"Success!"});
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 router.delete("/:id&:clientId",verifyToken, async (req, res) => {
   console.log(req.params.id,req.body.clientId)
   if (req.tokendata.userType !== "Admin") {

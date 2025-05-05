@@ -256,7 +256,7 @@ router.post("/:clientId", verifyToken, async (req, res) => {
   }catch(error){
     return res.status(400).json({ message: error.message });
   }
-
+  await client.save()
   return res.status(201).json({ message: "Appointments added successfully" });
 });
 
@@ -365,7 +365,7 @@ router.get("/client/:clientId", verifyToken, async (req, res) => {
         ismembership
       }))
     }
-    res.json(formattedAppointments);
+    res.json(formattedAppointments.reverse());
 } catch (error) {
   res.status(500).json({ message: error.message });
 }

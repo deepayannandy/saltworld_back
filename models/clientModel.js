@@ -149,6 +149,10 @@ const clientSchema = new Schema({
             type: Number,
             required: true,
           },
+          totalSessions:{
+            type: Number,
+            required: false,
+          },
         }],
         required: true,
       },
