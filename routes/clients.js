@@ -28,10 +28,11 @@ router.post("/", verifyToken, async (req, res) => {
   req.body.emailNotification = true;
   req.body.emailMarketingNotification = true;
   const { value } = clientCreateValidator(req.body);
-  const findClient= await Client.findOne({mobileNumber:value.mobileNumber})
-  if(findClient) return res.status(500).json({ message: "Client already exist!" });
-  value.onBoardingDate= new Date(req.body.onBoardingDate);
-  const client = new Client({...value});
+  const findClient = await Client.findOne({ mobileNumber: value.mobileNumber });
+  if (findClient)
+    return res.status(500).json({ message: "Client already exist!" });
+  value.onBoardingDate = new Date(req.body.onBoardingDate);
+  const client = new Client({ ...value });
 
   try {
     const newClientData = await client.save();
@@ -76,14 +77,14 @@ router.patch("/:id", verifyToken, async (req, res) => {
 
   const { value, error } = clientUpdateValidator(req.body);
   if (error) {
-    console.log(error)
+    console.log(error);
     return res.status(422).json({ message: error.message });
   }
 
   if (value.mobileNumber) {
     value.mobileNumber = Number(value.mobileNumber);
   }
-  value.onBoardingDate=new Date(req.body.onBoardingDate)
+  value.onBoardingDate = new Date(req.body.onBoardingDate);
 
   try {
     const updatedClient = await Client.updateOne({ _id: client.id }, value);
@@ -95,16 +96,16 @@ router.patch("/:id", verifyToken, async (req, res) => {
 
 //get a clients
 router.get("/:id", async (req, res) => {
-  try{
-  let client = await Client.findById(req.params.id);
-  if (!client) {
-    return res.status(404).json({ message: "Client Data not found!" });
+  try {
+    let client = await Client.findById(req.params.id);
+    if (!client) {
+      return res.status(404).json({ message: "Client Data not found!" });
+    }
+    //todo fetch all appointment of the client
+    return res.status(200).json(client);
+  } catch (error) {
+    return res.status(404).json({ message: "No data found" });
   }
-  //todo fetch all appointment of the client 
-  return res.status(200).json(client);
-}catch(error){
-  return res.status(404).json({ message: "No data found" });
-}
 });
 
 router.delete("/:id", verifyToken, async (req, res) => {
@@ -127,11 +128,11 @@ router.delete("/:id", verifyToken, async (req, res) => {
 
 router.get("/search/:para", async (req, res) => {
   try {
+    if (req.params.para.length < 3) res.json([]);
     const nameRegex = new RegExp(req.params.para, "i");
-    const clients = await Client.find().or([
-      { firstName: nameRegex },
-      { lastName: nameRegex },
-    ]);
+    const clients = await Client.find()
+      .or([{ firstName: nameRegex }, { lastName: nameRegex }])
+      .limit(10);
 
     res.json(clients);
   } catch (error) {
@@ -140,10 +141,53 @@ router.get("/search/:para", async (req, res) => {
 });
 
 //get all clients
-router.get("/", async (_, res) => {
+router.get("/", async (req, res) => {
   try {
-    const clients = (await Client.find({},{notes:0,appointments:0,clientMemberships:0})).reverse();
-    res.json(clients);
+    const size = parseInt(req.query.size);
+    const page = parseInt(req.query.page);
+    const clients = await Client.aggregate([
+      {
+        $facet: {
+          clients: [
+            {
+              $sort: {
+                onBoardingDate: -1,
+              },
+            },
+            {
+              $skip: (page - 1) * size,
+            },
+            {
+              $limit: size,
+            },
+          ],
+          totalCount: [
+            {
+              $count: "total",
+            },
+          ],
+        },
+      },
+      {
+        $project: {
+          clients: 1,
+          numberOfItems: {
+            $arrayElemAt: ["$totalCount.total", 0],
+          },
+          numberOfPages: {
+            $ceil: {
+              $divide: [
+                {
+                  $arrayElemAt: ["$totalCount.total", 0],
+                },
+                size,
+              ],
+            },
+          },
+        },
+      },
+    ]);
+    res.json(clients[0]);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
