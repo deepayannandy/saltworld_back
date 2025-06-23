@@ -96,64 +96,66 @@ const clientSchema = new Schema({
         required: true,
       },
       services: {
-        type: [{
-          name: {
-            type: String,
-            required: true,
+        type: [
+          {
+            name: {
+              type: String,
+              required: true,
+            },
+            category: {
+              type: String,
+              required: true,
+            },
+            description: {
+              type: String,
+              required: true,
+            },
+            duration: {
+              type: Number,
+              required: true,
+            },
+            cost: {
+              type: Number,
+              required: true,
+            },
+            sellingCost: {
+              type: Number,
+              required: true,
+            },
+            taxRate: {
+              type: Number,
+              required: true,
+            },
+            hsnCode: {
+              type: String,
+              required: true,
+            },
+            resourceType: {
+              type: String,
+              required: true,
+            },
+            includeTax: {
+              type: Number,
+              required: true,
+            },
+            active: {
+              type: Boolean,
+              required: true,
+            },
+            branch: {
+              type: String,
+              required: true,
+            },
+            sessions: {
+              type: Number,
+              required: true,
+            },
+            totalSessions: {
+              type: Number,
+              required: false,
+            },
           },
-          category: {
-            type: String,
-            required: true,
-          },
-          description: {
-            type: String,
-            required: true,
-          },
-          duration: {
-            type: Number,
-            required: true,
-          },
-          cost: {
-            type: Number,
-            required: true,
-          },
-          sellingCost: {
-            type: Number,
-            required: true,
-          },
-          taxRate: {
-            type: Number,
-            required: true,
-          },
-          hsnCode: {
-            type: String,
-            required: true,
-          },
-          resourceType: {
-            type: String,
-            required: true,
-          },
-          includeTax: {
-            type: Number,
-            required: true,
-          },
-          active: {
-            type: Boolean,
-            required: true,
-          },
-          branch: {
-            type: String,
-            required: true,
-          },
-          sessions:{
-            type: Number,
-            required: true,
-          },
-          totalSessions:{
-            type: Number,
-            required: false,
-          },
-        }],
+        ],
         required: true,
       },
       description: {
@@ -195,6 +197,10 @@ const clientSchema = new Schema({
       endDate: {
         type: Date,
         required: true,
+      },
+      oldEndDate: {
+        type: Date,
+        required: false,
       },
     },
   ],

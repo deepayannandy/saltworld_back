@@ -128,15 +128,20 @@ router.delete("/:id", verifyToken, async (req, res) => {
 
 router.get("/search/:para", async (req, res) => {
   try {
-    if (req.params.para.length < 3) res.json([]);
+    console.log(req.params.para);
+    if (req.params.para.length < 3) return res.json([]);
     const nameRegex = new RegExp(req.params.para, "i");
     const clients = await Client.find()
-      .or([{ firstName: nameRegex }, { lastName: nameRegex }])
+      .or([
+        { firstName: nameRegex },
+        { lastName: nameRegex },
+        { mobile: nameRegex },
+        { email: nameRegex },
+      ])
       .limit(10);
-
-    res.json(clients);
+    return res.json(clients);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 });
 
