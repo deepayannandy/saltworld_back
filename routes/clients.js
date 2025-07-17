@@ -128,19 +128,34 @@ router.delete("/:id", verifyToken, async (req, res) => {
 
 router.get("/search/:para", async (req, res) => {
   try {
-    console.log(req.params.para);
+    console.log(req.params.para.toString());
     if (req.params.para.length < 3) return res.json([]);
     const nameRegex = new RegExp(req.params.para, "i");
-    const clients = await Client.find()
-      .or([
-        { firstName: nameRegex },
-        { lastName: nameRegex },
-        { mobile: nameRegex },
+    // const lastNameRegex = new RegExp(req.params.para.split(" ")[1], "i");
+    const clients = await Client.find({
+      $or: [
+        {
+          $expr: {
+            $regexMatch: {
+              input: {
+                $concat: [
+                  { $trim: { input: "$firstName", chars: " " } },
+                  " ",
+                  { $trim: { input: "$lastName", chars: " " } },
+                ],
+              },
+              regex: req.params.para, //Your text search here
+              options: "i",
+            },
+          },
+        },
+        { mobileNumber: nameRegex },
         { email: nameRegex },
-      ])
-      .limit(10);
+      ],
+    }).limit(10);
     return res.json(clients);
   } catch (error) {
+    console.error(error.message);
     return res.status(500).json({ message: error.message });
   }
 });
