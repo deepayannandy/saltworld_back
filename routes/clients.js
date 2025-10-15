@@ -130,8 +130,7 @@ router.get("/search/:para", async (req, res) => {
   try {
     console.log(req.params.para.toString());
     if (req.params.para.length < 3) return res.json([]);
-    const nameRegex = new RegExp(req.params.para, "i");
-    // const lastNameRegex = new RegExp(req.params.para.split(" ")[1], "i");
+    const regex = new RegExp(req.params.para, "i");
     const clients = await Client.find({
       $or: [
         {
@@ -139,18 +138,19 @@ router.get("/search/:para", async (req, res) => {
             $regexMatch: {
               input: {
                 $concat: [
-                  { $trim: { input: "$firstName", chars: " " } },
+                  //concatenate both parts of the name before matching it with the search key
+                  { $trim: { input: "$firstName", chars: " " } }, //trims any leading or trailing spaces
                   " ",
-                  { $trim: { input: "$lastName", chars: " " } },
+                  { $trim: { input: "$lastName", chars: " " } }, //trims any leading or trailing spaces
                 ],
               },
-              regex: req.params.para, //Your text search here
+              regex: req.params.para, //search key
               options: "i",
             },
           },
         },
-        { mobileNumber: nameRegex },
-        { email: nameRegex },
+        { mobileNumber: regex },
+        { email: regex },
       ],
     }).limit(10);
     return res.json(clients);
